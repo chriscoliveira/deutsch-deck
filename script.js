@@ -267,7 +267,7 @@ const btnTema = document.getElementById("btnTema");
 function aplicarTema() {
   const tema = localStorage.getItem("anki-tema") || "claro";
   document.body.classList.toggle("dark", tema === "escuro");
-  btnTema.innerText = tema === "escuro" ? "☀ Tema claro" : "🌙 Tema escuro";
+  btnTema.innerText = tema === "escuro" ? "☀" : "🌙 ";
 }
 
 btnTema.onclick = () => {
