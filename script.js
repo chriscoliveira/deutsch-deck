@@ -1,6 +1,7 @@
 // ===== Config =====
 const CSV_FILE = "cards.csv"; // precisa estar na raiz do repo
 let TAMANHO_BLOCO = 30;
+let audioLiberado = false;
 
 // ===== Estado =====
 let todosCards = [];       // todos do CSV (filtrados/limpos)
@@ -52,6 +53,14 @@ document.addEventListener("keydown", (e) => {
   if (e.key.toLowerCase() === "a") marcarResposta(true);
   if (e.key.toLowerCase() === "e") marcarResposta(false);
 });
+
+document.addEventListener(
+  "click",
+  () => {
+    audioLiberado = true;
+  },
+  { once: true }
+);
 
 // ===== Carregar CSV =====
 // PapaParse é próprio para parsear CSV no browser e suporta download remoto/local 【2-90d122】
@@ -154,12 +163,19 @@ function mostrarCard() {
   elConteudo.textContent = card.alemao;
 
   if (card.audio) {
-    elAudio.src = card.audio;
-    elAudio.style.display = "block";
+  elAudio.src = card.audio;
+  elAudio.style.display = "block";
+
+  if (audioLiberado) {
+    elAudio.currentTime = 0;
+    elAudio.play().catch(() => {
+      // ignora erros de autoplay bloqueado
+    });
+  }
   } else {
     elAudio.style.display = "none";
-    elAudio.removeAttribute("src");
   }
+
 }
 
 function virarCard() {
