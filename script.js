@@ -18,6 +18,10 @@ let respondidos = new Set();
 let acertos = 0;
 let erros = 0;
 
+let totalAcertos = Number(localStorage.getItem("anki-total-acertos") || 0);
+let totalErros = Number(localStorage.getItem("anki-total-erros") || 0);
+
+
 // 🔑 CONTROLE DE AUTOPLAY
 let audioLiberado = false;
 
@@ -214,6 +218,13 @@ function marcarResposta(correto) {
     erros++;
     filaErros.push(idx);
   }
+  if (correto) {
+    totalAcertos++;
+    localStorage.setItem("anki-total-acertos", totalAcertos);
+  } else {
+    totalErros++;
+    localStorage.setItem("anki-total-erros", totalErros);
+  }
 
   atualizarContadores();
   avancar();
@@ -236,11 +247,17 @@ function avancar() {
   mostrarCard();
 }
 
+
 function atualizarContadores() {
   elAcertos.innerText = acertos;
   elErros.innerText = erros;
   elRespondidos.innerText = acertos + erros;
+
+  // totais acumulados
+  document.getElementById("totalGlobal").innerText =
+    totalAcertos + totalErros;
 }
+
 
 /*************************************************
  * TEMA ESCURO (persistente)
