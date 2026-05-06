@@ -1,21 +1,29 @@
-// ===== Config =====
-const CSV_FILE = "cards.csv"; // precisa estar na raiz do repo
+/*************************************************
+ * CONFIGURAÇÃO
+ *************************************************/
+const CSV_FILE = "cards.csv";
 let TAMANHO_BLOCO = 30;
-let audioLiberado = false;
 
-// ===== Estado =====
-let todosCards = [];       // todos do CSV (filtrados/limpos)
-let poolIndices = [];      // índices disponíveis após filtro de categoria
-let ordemBloco = [];       // ordem de índices no bloco atual
-let filaErros = [];        // erros voltam ao final
-let pos = 0;               // posição no bloco
+/*************************************************
+ * ESTADO GLOBAL
+ *************************************************/
+let todosCards = [];
+let poolIndices = [];
+let ordemBloco = [];
+let filaErros = [];
+let pos = 0;
 let mostrandoFrente = true;
-let respondidosSet = new Set();
+let respondidos = new Set();
 
 let acertos = 0;
 let erros = 0;
 
-// ===== Elementos =====
+// 🔑 CONTROLE DE AUTOPLAY
+let audioLiberado = false;
+
+/*************************************************
+ * ELEMENTOS DA TELA
+ *************************************************/
 const elCategoriaAtual = document.getElementById("categoriaAtual");
 const elConteudo = document.getElementById("conteudo");
 const elCard = document.getElementById("card");
@@ -29,56 +37,79 @@ const elTotalBloco = document.getElementById("totalBloco");
 const elFiltroCategoria = document.getElementById("filtroCategoria");
 const elTamanhoBloco = document.getElementById("tamanhoBloco");
 
-document.getElementById("btnVirar").addEventListener("click", virarCard);
-document.getElementById("btnAudio").addEventListener("click", tocarAudio);
-document.getElementById("btnAcerto").addEventListener("click", () => marcarResposta(true));
-document.getElementById("btnErro").addEventListener("click", () => marcarResposta(false));
-document.getElementById("btnEmbaralhar").addEventListener("click", () => iniciarBloco(true));
-document.getElementById("btnNovoBloco").addEventListener("click", () => iniciarBloco(false));
-elCard.addEventListener("click", virarCard);
+/*************************************************
+ * DESBLOQUEIO DE ÁUDIO (OBRIGATÓRIO PARA AUTOPLAY)
+ *************************************************/
+// 🔒 Browsers só liberam áudio automático depois de interação
+function desbloquearAudio() {
+  if (audioLiberado) return;
 
-elTamanhoBloco.addEventListener("change", () => {
+  audioLiberado = true;
+
+  // "warm-up" do áudio (truque aceito pelos browsers)
+  try {
+    elAudio.muted = true;
+    elAudio.play()
+      .then(() => {
+        elAudio.pause();
+        elAudio.currentTime = 0;
+        elAudio.muted = false;
+      })
+      .catch(() => {});
+  } catch {}
+}
+
+// ✅ Qualquer clique OU tecla desbloqueia
+document.addEventListener("click", desbloquearAudio, { once: true });
+document.addEventListener("keydown", desbloquearAudio, { once: true });
+
+/*************************************************
+ * LISTENERS DE BOTÕES
+ *************************************************/
+document.getElementById("btnVirar").onclick = virarCard;
+document.getElementById("btnAudio").onclick = tocarAudio;
+document.getElementById("btnAcerto").onclick = () => marcarResposta(true);
+document.getElementById("btnErro").onclick = () => marcarResposta(false);
+document.getElementById("btnEmbaralhar").onclick = () => iniciarBloco(true);
+document.getElementById("btnNovoBloco").onclick = () => iniciarBloco(false);
+elCard.onclick = virarCard;
+
+elTamanhoBloco.onchange = () => {
   TAMANHO_BLOCO = parseInt(elTamanhoBloco.value, 10);
   iniciarBloco(false);
-});
+};
 
-elFiltroCategoria.addEventListener("change", () => {
+elFiltroCategoria.onchange = () => {
   montarPoolPorCategoria();
   iniciarBloco(false);
-});
+};
 
-// Atalhos de teclado
-document.addEventListener("keydown", (e) => {
-  if (e.code === "Space") { e.preventDefault(); virarCard(); }
+// Atalhos
+document.addEventListener("keydown", e => {
+  if (e.code === "Space") {
+    e.preventDefault();
+    virarCard();
+  }
   if (e.key.toLowerCase() === "a") marcarResposta(true);
   if (e.key.toLowerCase() === "e") marcarResposta(false);
 });
 
-document.addEventListener(
-  "click",
-  () => {
-    audioLiberado = true;
-  },
-  { once: true }
-);
-
-// ===== Carregar CSV =====
-// PapaParse é próprio para parsear CSV no browser e suporta download remoto/local 【2-90d122】
+/*************************************************
+ * CARREGAR CSV
+ *************************************************/
 Papa.parse(CSV_FILE, {
   download: true,
   delimiter: ";",
   skipEmptyLines: true,
   complete: (results) => {
-    // results.data -> array de linhas (cada linha = array de colunas)
-    // formato: [categoria, alemao, portugues, audio]
-    todosCards = (results.data || [])
-      .map((l) => ({
-        categoria: (l[0] ?? "").trim(),
-        alemao: (l[1] ?? "").trim(),
-        portugues: (l[2] ?? "").trim(),
-        audio: (l[3] ?? "").trim(),
+    todosCards = results.data
+      .map(l => ({
+        categoria: (l[0] || "").trim(),
+        alemao: (l[1] || "").trim(),
+        portugues: (l[2] || "").trim(),
+        audio: (l[3] || "").trim()
       }))
-      .filter(c => c.categoria && c.alemao && c.portugues); // limpa linhas quebradas
+      .filter(c => c.categoria && c.alemao && c.portugues);
 
     montarDropdownCategorias();
     montarPoolPorCategoria();
@@ -86,36 +117,29 @@ Papa.parse(CSV_FILE, {
   }
 });
 
-// ===== Funções =====
+/*************************************************
+ * FUNÇÕES PRINCIPAIS
+ *************************************************/
 function montarDropdownCategorias() {
-  const categorias = Array.from(new Set(todosCards.map(c => c.categoria))).sort();
+  const cats = [...new Set(todosCards.map(c => c.categoria))].sort();
 
   elFiltroCategoria.innerHTML = "";
-  const optTodas = document.createElement("option");
-  optTodas.value = "__todas__";
-  optTodas.textContent = "Todas";
-  elFiltroCategoria.appendChild(optTodas);
+  elFiltroCategoria.add(new Option("Todas", "__todas__"));
 
-  categorias.forEach(cat => {
-    const opt = document.createElement("option");
-    opt.value = cat;
-    opt.textContent = cat;
-    elFiltroCategoria.appendChild(opt);
-  });
+  cats.forEach(c => elFiltroCategoria.add(new Option(c, c)));
 }
 
 function montarPoolPorCategoria() {
-  const selecionada = elFiltroCategoria.value || "__todas__";
+  const cat = elFiltroCategoria.value;
   poolIndices = [];
 
-  for (let i = 0; i < todosCards.length; i++) {
-    if (selecionada === "__todas__" || todosCards[i].categoria === selecionada) {
+  todosCards.forEach((c, i) => {
+    if (cat === "__todas__" || c.categoria === cat) {
       poolIndices.push(i);
     }
-  }
+  });
 }
 
-// Fisher-Yates (Durstenfeld) shuffle, padrão para embaralhar arrays 【3-8127b6】
 function embaralharArray(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -123,87 +147,72 @@ function embaralharArray(arr) {
   }
 }
 
-function iniciarBloco(embaralharPool) {
-  // reset stats do bloco
+function iniciarBloco(embaralhar = false) {
   acertos = 0;
   erros = 0;
-  respondidosSet = new Set();
+  respondidos.clear();
   filaErros = [];
   pos = 0;
 
-  // cria ordem do bloco
-  const base = [...poolIndices];
-  if (embaralharPool) embaralharArray(base);
+  let base = [...poolIndices];
+  if (embaralhar) embaralharArray(base);
 
   ordemBloco = base.slice(0, Math.min(TAMANHO_BLOCO, base.length));
-
-  elTotalBloco.textContent = String(ordemBloco.length);
+  elTotalBloco.innerText = ordemBloco.length;
   atualizarContadores();
 
   if (ordemBloco.length === 0) {
-    elCategoriaAtual.textContent = "Sem cards nessa categoria.";
-    elConteudo.textContent = "Verifique o filtro.";
-    elAudio.style.display = "none";
+    elCategoriaAtual.innerText = "Sem cards";
+    elConteudo.innerText = "";
     return;
   }
   mostrarCard();
 }
 
-function obterIndiceAtual() {
-  return ordemBloco[pos];
-}
-
 function mostrarCard() {
   mostrandoFrente = true;
+  const card = todosCards[ordemBloco[pos]];
 
-  const idx = obterIndiceAtual();
-  const card = todosCards[idx];
-
-  elCategoriaAtual.textContent = card.categoria;
-  elConteudo.textContent = card.alemao;
+  elCategoriaAtual.innerText = card.categoria;
+  elConteudo.innerText = card.alemao;
 
   if (card.audio) {
-  elAudio.src = card.audio;
-  elAudio.style.display = "block";
+    elAudio.src = card.audio;
+    elAudio.style.display = "block";
 
-  if (audioLiberado) {
-    elAudio.currentTime = 0;
-    elAudio.play().catch(() => {
-      // ignora erros de autoplay bloqueado
-    });
-  }
+    // ✅ AUTOPLAY REAL (só após desbloqueio)
+    if (audioLiberado) {
+      elAudio.currentTime = 0;
+      elAudio.play().catch(() => {});
+    }
   } else {
     elAudio.style.display = "none";
   }
-
 }
 
 function virarCard() {
-  if (ordemBloco.length === 0) return;
-
-  const idx = obterIndiceAtual();
-  const card = todosCards[idx];
-
+  const card = todosCards[ordemBloco[pos]];
   mostrandoFrente = !mostrandoFrente;
-  elConteudo.textContent = mostrandoFrente ? card.alemao : card.portugues;
+  elConteudo.innerText = mostrandoFrente ? card.alemao : card.portugues;
 }
 
 function tocarAudio() {
-  if (elAudio.style.display === "none") return;
+  if (!elAudio.src) return;
+  elAudio.currentTime = 0;
   elAudio.play();
 }
 
 function marcarResposta(correto) {
-  if (ordemBloco.length === 0) return;
+  const idx = ordemBloco[pos];
+  if (respondidos.has(idx)) return;
 
-  const idx = obterIndiceAtual();
-  if (respondidosSet.has(idx)) return; // evita marcar duas vezes o mesmo card
+  respondidos.add(idx);
 
-  respondidosSet.add(idx);
-  if (correto) acertos++;
-  else {
+  if (correto) {
+    acertos++;
+  } else {
     erros++;
-    filaErros.push(idx); // errou -> volta depois (reaparece)
+    filaErros.push(idx);
   }
 
   atualizarContadores();
@@ -211,28 +220,24 @@ function marcarResposta(correto) {
 }
 
 function avancar() {
-  // pula para o próximo card dentro do bloco
   pos++;
 
-  // terminou o bloco? então anexa os erros (se tiver) e continua
   if (pos >= ordemBloco.length) {
     if (filaErros.length > 0) {
-      // adiciona erros ao final e zera filaErros
       ordemBloco = ordemBloco.concat(filaErros);
       filaErros = [];
-      elTotalBloco.textContent = String(ordemBloco.length);
+      elTotalBloco.innerText = ordemBloco.length;
     } else {
       alert("🎉 Bloco concluído!");
       iniciarBloco(false);
       return;
     }
   }
-
   mostrarCard();
 }
 
 function atualizarContadores() {
-  elAcertos.textContent = String(acertos);
-  elErros.textContent = String(erros);
-  elRespondidos.textContent = String(acertos + erros);
+  elAcertos.innerText = acertos;
+  elErros.innerText = erros;
+  elRespondidos.innerText = acertos + erros;
 }
