@@ -260,3 +260,32 @@ btnTema.onclick = () => {
 };
 
 aplicarTema();
+
+/*************************************************
+ * SWIPE MOBILE
+ *************************************************/
+let xStart = null;
+let yStart = null;
+
+elCard.addEventListener("touchstart", e => {
+  const t = e.touches[0];
+  xStart = t.clientX;
+  yStart = t.clientY;
+});
+
+elCard.addEventListener("touchend", e => {
+  if (xStart === null || yStart === null) return;
+
+  const t = e.changedTouches[0];
+  const dx = t.clientX - xStart;
+  const dy = t.clientY - yStart;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > 50) marcarResposta(true);   // 👉 direita = acerto
+    if (dx < -50) marcarResposta(false); // 👈 esquerda = erro
+  } else {
+    if (dy < -50) virarCard(); // 👆 cima = virar
+  }
+
+  xStart = yStart = null;
+});
