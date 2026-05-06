@@ -246,11 +246,14 @@ function avancar() {
 
 
 function atualizarContadores() {
+  // sessão atual
   elAcertos.innerText = acertos;
   elErros.innerText = erros;
   elRespondidos.innerText = acertos + erros;
 
-  // totais acumulados
+  // histórico global
+  document.getElementById("totalAcertosGlobal").innerText = totalAcertos;
+  document.getElementById("totalErrosGlobal").innerText = totalErros;
   document.getElementById("totalGlobal").innerText =
     totalAcertos + totalErros;
 }
