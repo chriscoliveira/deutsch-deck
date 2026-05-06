@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anki Web (CSV)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="topo">
+    <h1>📚 Anki Web</h1>
+
+    <div class="linha">
+      <label for="filtroCategoria">Categoria:</label>
+      <select id="filtroCategoria"></select>
+
+      <label for="tamanhoBloco">Bloco:</label>
+      <select id="tamanhoBloco">
+        <option value="20">20</option>
+        <option value="30" selected>30</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+
+      <button id="btnNovoBloco" type="button">🧩 Novo bloco</button>
+      <button id="btnEmbaralhar" type="button">🔀 Embaralhar</button>
+    </div>
+
+    <div class="stats">
+      ✅ <span id="acertos">0</span>
+      ❌ <span id="erros">0</span>
+      📊 <span id="respondidos">0</span>/<span id="totalBloco">0</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="categoria" id="categoriaAtual">Carregando...</div>
+
+    <div id="card" class="card" title="Clique para virar (ou aperte Espaço)">
+      <div id="conteudo" class="conteudo">Carregando...</div>
+    </div>
+
+    <div class="acoes">
+      <button id="btnVirar" type="button">👁 Mostrar resposta</button>
+      <button id="btnAudio" type="button">🔊 Áudio</button>
+      <button id="btnAcerto" type="button" class="ok">✅ Acertei</button>
+      <button id="btnErro" type="button" class="no">❌ Errei</button>
+    </div>
+
+    <audio id="audio" controls class="audio" style="display:none"></audio>
+
+    <p class="dica">
+      Atalhos: <b>Espaço</b>=virar, <b>A</b>=acerto, <b>E</b>=erro
+    </p>
+  </main>
+
+  <!-- PapaParse (CSV) -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <!-- Seu script -->
+  <script src="script.js"></script>
+</body>
+</html>
