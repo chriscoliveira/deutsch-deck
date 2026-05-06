@@ -241,3 +241,22 @@ function atualizarContadores() {
   elErros.innerText = erros;
   elRespondidos.innerText = acertos + erros;
 }
+
+/*************************************************
+ * TEMA ESCURO (persistente)
+ *************************************************/
+const btnTema = document.getElementById("btnTema");
+
+function aplicarTema() {
+  const tema = localStorage.getItem("anki-tema") || "claro";
+  document.body.classList.toggle("dark", tema === "escuro");
+  btnTema.innerText = tema === "escuro" ? "☀ Tema claro" : "🌙 Tema escuro";
+}
+
+btnTema.onclick = () => {
+  const novo = document.body.classList.contains("dark") ? "claro" : "escuro";
+  localStorage.setItem("anki-tema", novo);
+  aplicarTema();
+};
+
+aplicarTema();
