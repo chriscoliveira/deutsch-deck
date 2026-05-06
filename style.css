@@ -97,3 +97,38 @@
     color: var(--muted);
     margin:10px 0 24px;
   }
+
+/* ===== Melhorias Mobile ===== */
+@media (max-width: 600px) {
+  .card {
+    height: 200px;
+    font-size: 20px;
+  }
+
+  .acoes button {
+    flex: 1;
+  }
+}
+
+/* ===== Tema Escuro ===== */
+body.dark {
+  background: #121212;
+  color: #eaeaea;
+}
+
+body.dark .card {
+  background: #1e1e1e;
+  color: #fff;
+}
+
+body.dark button,
+body.dark select {
+  background: #2a2a2a;
+  color: #eaeaea;
+  border-color: #444;
+}
+
+body.dark .dica,
+body.dark .categoria {
+  color: #aaa;
+}
