@@ -214,15 +214,12 @@ function marcarResposta(correto) {
 
   if (correto) {
     acertos++;
-  } else {
-    erros++;
-    filaErros.push(idx);
-  }
-  if (correto) {
     totalAcertos++;
     localStorage.setItem("anki-total-acertos", totalAcertos);
   } else {
+    erros++;
     totalErros++;
+    filaErros.push(idx);
     localStorage.setItem("anki-total-erros", totalErros);
   }
 
