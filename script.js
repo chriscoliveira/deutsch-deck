@@ -161,7 +161,10 @@ function iniciarBloco(embaralhar = false) {
   let base = [...poolIndices];
   if (embaralhar) embaralharArray(base);
 
-  ordemBloco = base.slice(0, Math.min(TAMANHO_BLOCO, base.length));
+  // ✅ USA EXATAMENTE O VALOR SELECIONADO
+  const tamanho = Math.min(TAMANHO_BLOCO, base.length);
+  ordemBloco = base.slice(0, tamanho);
+
   elTotalBloco.innerText = ordemBloco.length;
   atualizarContadores();
 
@@ -170,6 +173,7 @@ function iniciarBloco(embaralhar = false) {
     elConteudo.innerText = "";
     return;
   }
+
   mostrarCard();
 }
 
