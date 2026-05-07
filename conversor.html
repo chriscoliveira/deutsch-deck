@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anki → CSV Converter</title>
+  <style>
+    :root {
+      --bg: #0e0e0f;
+      --surface: #1a1a1c;
+      --surface2: #232326;
+      --border: #2e2e32;
+      --border2: #3e3e44;
+      --text: #f0f0f0;
+      --muted: #888;
+      --accent: #7c6af7;
+      --accent-dim: #3d3578;
+      --success: #34c87a;
+      --danger: #f25c5c;
+      --font: 'DM Mono', monospace;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1rem 4rem;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .header h1 {
+      font-size: 1.6rem;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .header h1 span {
+      color: var(--accent);
+    }
+
+    .header p {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 300;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 620px;
+    }
+
+    /* DROP ZONE */
+    #drop-zone {
+      border: 1.5px dashed var(--border2);
+      border-radius: 10px;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    #drop-zone:hover, #drop-zone.over {
+      border-color: var(--accent);
+      background: rgba(124, 106, 247, 0.06);
+    }
+
+    #drop-zone .icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    #drop-zone p {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 300;
+      margin-top: 6px;
+    }
+
+    #drop-zone strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      text-decoration: none;
+    }
+
+    .btn:hover { border-color: var(--accent); background: rgba(124,106,247,0.08); }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: #6a5ae0; border-color: #6a5ae0; }
+
+    /* PROGRESS */
+    #status-area { display: none; margin-top: 1.5rem; }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .progress-track {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    /* RESULT */
+    #result-area { display: none; margin-top: 1.5rem; }
+
+    .result-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--success);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+
+    .stat {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 300;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* PREVIEW TABLE */
+    .preview-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 300;
+      margin-bottom: 8px;
+    }
+
+    .preview-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 1.25rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th {
+      padding: 8px 12px;
+      text-align: left;
+      color: var(--muted);
+      font-weight: 400;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 7px 12px;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* ERROR */
+    #error-area {
+      display: none;
+      margin-top: 1.5rem;
+      background: rgba(242, 92, 92, 0.08);
+      border: 1px solid rgba(242, 92, 92, 0.3);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+    }
+
+    #error-area .err-title {
+      color: var(--danger);
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #error-msg { color: #f09090; font-size: 13px; font-weight: 300; line-height: 1.5; }
+
+    .footer {
+      margin-top: 2rem;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 300;
+      text-align: center;
+    }
+
+    .footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>anki <span>→</span> csv</h1>
+    <p>converte arquivos .apkg para CSV compatível com o deutsch-deck</p>
+  </div>
+
+  <div class="card">
+    <div id="drop-zone">
+      <span class="icon">📦</span>
+      <strong>Arraste o arquivo .apkg aqui</strong>
+      <p>ou clique para selecionar</p>
+      <br>
+      <button class="btn" onclick="document.getElementById('file-input').click()">
+        📁 Selecionar arquivo
+      </button>
+      <input type="file" id="file-input" accept=".apkg" style="display:none">
+    </div>
+
+    <div id="status-area">
+      <div class="progress-label">
+        <span id="status-text">Processando...</span>
+        <span id="pct-text">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <div id="result-area">
+      <div class="result-title">
+        ✅ <span id="result-title-text"></span>
+      </div>
+
+      <div class="stats" id="stats-grid"></div>
+
+      <p class="preview-label">Prévia — 3 primeiros cards</p>
+      <div class="preview-wrap">
+        <table id="preview-table">
+          <thead>
+            <tr>
+              <th>Categoria</th><th>Frente</th><th>Verso</th><th>Áudio</th>
+            </tr>
+          </thead>
+          <tbody id="preview-body"></tbody>
+        </table>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="btn-download">⬇ Baixar CSV</button>
+        <button class="btn" id="btn-reset">↩ Converter outro</button>
+      </div>
+    </div>
+
+    <div id="error-area">
+      <div class="err-title">❌ Erro ao processar</div>
+      <p id="error-msg"></p>
+      <br>
+      <button class="btn" id="btn-retry">Tentar novamente</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    funciona 100% no browser — nenhum dado é enviado a servidores &nbsp;·&nbsp;
+    <a href="https://github.com" target="_blank">@christian.c3d</a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script>
+    let csvContent = '';
+    let outputFilename = 'cards.csv';
+
+    function stripHtml(text) {
+      const d = document.createElement('div');
+      d.innerHTML = text || '';
+      return (d.textContent || d.innerText || '').trim();
+    }
+
+    function extractAudio(text) {
+      const m = (text || '').match(/\[sound:([^\]]+)\]/);
+      return m ? m[1] : '';
+    }
+
+    function csvEscape(val) {
+      val = String(val || '');
+      if (val.includes(';') || val.includes('"') || val.includes('\n')) {
+        return '"' + val.replace(/"/g, '""') + '"';
+      }
+      return val;
+    }
+
+    function setProgress(pct, text) {
+      document.getElementById('progress-fill').style.width = pct + '%';
+      document.getElementById('status-text').textContent = text;
+      document.getElementById('pct-text').textContent = pct + '%';
+    }
+
+    function showStatus(text) {
+      document.getElementById('status-area').style.display = 'block';
+      document.getElementById('result-area').style.display = 'none';
+      document.getElementById('error-area').style.display = 'none';
+      setProgress(5, text);
+    }
+
+    function showError(msg) {
+      document.getElementById('status-area').style.display = 'none';
+      document.getElementById('error-area').style.display = 'block';
+      document.getElementById('error-msg').textContent = msg;
+    }
+
+    function reset() {
+      document.getElementById('status-area').style.display = 'none';
+      document.getElementById('result-area').style.display = 'none';
+      document.getElementById('error-area').style.display = 'none';
+      document.getElementById('file-input').value = '';
+      csvContent = '';
+    }
+
+    async function processApkg(file) {
+      showStatus('Abrindo arquivo...');
+
+      const arrayBuffer = await file.arrayBuffer();
+      setProgress(20, 'Descomprimindo .apkg...');
+
+      const zip = await JSZip.loadAsync(arrayBuffer);
+      setProgress(35, 'Localizando banco de dados...');
+
+      const dbFile = zip.file('collection.anki21') || zip.file('collection.anki2');
+      if (!dbFile) throw new Error('Banco de dados não encontrado. Verifique se o arquivo .apkg é válido.');
+
+      const dbBuffer = await dbFile.async('arraybuffer');
+      setProgress(50, 'Carregando SQL.js...');
+
+      const SQL = await initSqlJs({
+        locateFile: f => `https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/${f}`
+      });
+
+      const db = new SQL.Database(new Uint8Array(dbBuffer));
+      setProgress(65, 'Lendo estrutura do deck...');
+
+      const colRow = db.exec('SELECT models, decks FROM col');
+      if (!colRow.length) throw new Error('Estrutura do arquivo não reconhecida (tabela col ausente).');
+
+      const models = JSON.parse(colRow[0].values[0][0]);
+      const decks  = JSON.parse(colRow[0].values[0][1]);
+
+      const deckNames = {};
+      for (const [k, v] of Object.entries(decks)) deckNames[k] = v.name;
+
+      const modelFields = {};
+      for (const [mid, m] of Object.entries(models)) {
+        modelFields[mid] = m.flds.map(f => f.name);
+      }
+
+      setProgress(75, 'Extraindo cards...');
+
+      const notes = db.exec(`
+        SELECT n.flds, n.mid, c.did
+        FROM notes n
+        JOIN cards c ON c.nid = n.id
+        GROUP BY n.id
+      `);
+
+      const rows = notes.length ? notes[0].values : [];
+      const cards = [];
+
+      for (const [fldsRaw, mid, did] of rows) {
+        const campos = fldsRaw.split('\x1f');
+        const nomes  = modelFields[String(mid)] || [];
+        const cat    = deckNames[String(did)] || 'Deck';
+
+        const get = (nome, fb) => {
+          const idx = nomes.indexOf(nome);
+          if (idx >= 0 && idx < campos.length) return (campos[idx] || '').trim();
+          return fb < campos.length ? (campos[fb] || '').trim() : '';
+        };
+
+        let frente, verso, audio;
+
+        if (nomes.includes('SentenceTranslation')) {
+          frente = stripHtml(get('Sentence', 0));
+          const fonetica = get('Phonetic', 1);
+          const tradPal  = get('WordTranslation', 2);
+          const tradFra  = get('SentenceTranslation', 3);
+          verso  = tradFra + (tradPal ? ` [${tradPal}]` : '') + (fonetica ? ` (${fonetica})` : '');
+          audio  = extractAudio(get('Audio', 4));
+        } else {
+          frente = stripHtml(get(nomes[0] || 'Front', 0));
+          verso  = stripHtml(get(nomes[1] || 'Back', 1));
+          audio  = extractAudio(get('Audio', 4));
+        }
+
+        if (frente && verso) cards.push([cat, frente, verso, audio]);
+      }
+
+      db.close();
+      setProgress(95, 'Gerando CSV...');
+
+      csvContent = cards.map(r => r.map(csvEscape).join(';')).join('\n');
+      outputFilename = file.name.replace(/\.apkg$/i, '.csv');
+
+      setProgress(100, 'Concluído!');
+      renderResult(file.name, cards);
+    }
+
+    function renderResult(filename, cards) {
+      document.getElementById('status-area').style.display = 'none';
+      document.getElementById('result-area').style.display = 'block';
+      document.getElementById('result-title-text').textContent =
+        filename.replace(/\.apkg$/i, '') + ' convertido com sucesso';
+
+      const cats = [...new Set(cards.map(c => c[0]))];
+      const statsData = [
+        ['cards', cards.length],
+        ['categorias', cats.length],
+        ['com áudio', cards.filter(c => c[3]).length]
+      ];
+
+      document.getElementById('stats-grid').innerHTML = statsData.map(([l, v]) => `
+        <div class="stat">
+          <div class="stat-label">${l}</div>
+          <div class="stat-value">${v}</div>
+        </div>
+      `).join('');
+
+      const tbody = document.getElementById('preview-body');
+      tbody.innerHTML = cards.slice(0, 3).map(r => `
+        <tr>${r.map(v => `<td title="${(v||'').replace(/"/g,'&quot;')}">${v || '<span style="color:var(--muted)">—</span>'}</td>`).join('')}</tr>
+      `).join('');
+    }
+
+    document.getElementById('btn-download').onclick = () => {
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url; a.download = outputFilename; a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    document.getElementById('btn-reset').onclick = reset;
+    document.getElementById('btn-retry').onclick = reset;
+
+    document.getElementById('file-input').addEventListener('change', e => {
+      if (e.target.files[0]) handleFile(e.target.files[0]);
+    });
+
+    const dz = document.getElementById('drop-zone');
+    dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('over'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+    dz.addEventListener('drop', e => {
+      e.preventDefault();
+      dz.classList.remove('over');
+      handleFile(e.dataTransfer.files[0]);
+    });
+    dz.addEventListener('click', e => {
+      if (e.target.tagName !== 'BUTTON') document.getElementById('file-input').click();
+    });
+
+    function handleFile(file) {
+      if (!file || !file.name.toLowerCase().endsWith('.apkg')) {
+        showError('Por favor selecione um arquivo .apkg válido.');
+        return;
+      }
+      processApkg(file).catch(err => showError(err.message || String(err)));
+    }
+  </script>
+</body>
+</html>
