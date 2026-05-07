@@ -2,7 +2,7 @@
  * CONFIGURAÇÃO
  *************************************************/
 const CSV_FILE = "cards.csv";
-let TAMANHO_BLOCO = 30;
+let TAMANHO_BLOCO = 100;
 
 /*************************************************
  * ESTADO GLOBAL
@@ -22,8 +22,7 @@ let acertos = 0;
 let erros = 0;
 
 let totalAcertos = Number(localStorage.getItem("anki-total-acertos") || 0);
-let totalErros = Number(localStorage.getItem("anki-total-erros") || 0);
-
+let totalErros   = Number(localStorage.getItem("anki-total-erros")   || 0);
 
 // 🔑 CONTROLE DE AUTOPLAY
 let audioLiberado = false;
@@ -32,53 +31,51 @@ let audioLiberado = false;
  * ELEMENTOS DA TELA
  *************************************************/
 const elCategoriaAtual = document.getElementById("categoriaAtual");
-const elConteudo = document.getElementById("conteudo");
-const elCard = document.getElementById("card");
-const elAudio = document.getElementById("audio");
+const elConteudo       = document.getElementById("conteudo");
+const elCard           = document.getElementById("card");
+const elAudio          = document.getElementById("audio");
 
-const elAcertos = document.getElementById("acertos");
-const elErros = document.getElementById("erros");
-const elRespondidos = document.getElementById("respondidos");
-const elTotalBloco = document.getElementById("totalBloco");
+const elAcertos      = document.getElementById("acertos");
+const elErros        = document.getElementById("erros");
+const elRespondidos  = document.getElementById("respondidos");
+const elTotalBloco   = document.getElementById("totalBloco");
 
 const elFiltroCategoria = document.getElementById("filtroCategoria");
-const elTamanhoBloco = document.getElementById("tamanhoBloco");
+const elTamanhoBloco    = document.getElementById("tamanhoBloco");
 
 /*************************************************
- * DESBLOQUEIO DE ÁUDIO (OBRIGATÓRIO PARA AUTOPLAY)
+ * DESBLOQUEIO DE ÁUDIO
  *************************************************/
-// 🔒 Browsers só liberam áudio automático depois de interação
 function desbloquearAudio() {
   if (audioLiberado) return;
-
   audioLiberado = true;
-
-  // "warm-up" do áudio (truque aceito pelos browsers)
   try {
     elAudio.muted = true;
     elAudio.play()
-      .then(() => {
-        elAudio.pause();
-        elAudio.currentTime = 0;
-        elAudio.muted = false;
-      })
+      .then(() => { elAudio.pause(); elAudio.currentTime = 0; elAudio.muted = false; })
       .catch(() => {});
   } catch {}
 }
 
-// ✅ Qualquer clique OU tecla desbloqueia
-document.addEventListener("click", desbloquearAudio, { once: true });
-document.addEventListener("keydown", desbloquearAudio, { once: true });
+document.addEventListener("click",   desbloquearAudio, { once: true });
+document.addEventListener("keydown",  desbloquearAudio, { once: true });
+
+/*************************************************
+ * HELPER — card atual
+ *************************************************/
+function getCard(idx) {
+  return usandoCSVLocal ? cardsCSVLocal[idx] : todosCards[idx];
+}
 
 /*************************************************
  * LISTENERS DE BOTÕES
  *************************************************/
-document.getElementById("btnVirar").onclick = virarCard;
-document.getElementById("btnAudio").onclick = tocarAudio;
-document.getElementById("btnAcerto").onclick = () => marcarResposta(true);
-document.getElementById("btnErro").onclick = () => marcarResposta(false);
+document.getElementById("btnVirar").onclick    = virarCard;
+document.getElementById("btnAudio").onclick    = tocarAudio;
+document.getElementById("btnAcerto").onclick   = () => marcarResposta(true);
+document.getElementById("btnErro").onclick     = () => marcarResposta(false);
 document.getElementById("btnEmbaralhar").onclick = () => iniciarBloco(true);
-document.getElementById("btnNovoBloco").onclick = () => iniciarBloco(false);
+document.getElementById("btnNovoBloco").onclick  = () => iniciarBloco(false);
 
 document.getElementById("csvLocal").addEventListener("change", (event) => {
   const file = event.target.files[0];
@@ -90,10 +87,10 @@ document.getElementById("csvLocal").addEventListener("change", (event) => {
     complete: (results) => {
       cardsCSVLocal = results.data
         .map(l => ({
-          categoria: "📁 CSV local",
-          alemao: (l[1] || "").trim(),
+          categoria: (l[0] || "📁 CSV local").trim() || "📁 CSV local",
+          alemao:    (l[1] || "").trim(),
           portugues: (l[2] || "").trim(),
-          audio: (l[3] || "").trim()
+          audio:     (l[3] || "").trim()
         }))
         .filter(c => c.alemao && c.portugues);
 
@@ -102,16 +99,9 @@ document.getElementById("csvLocal").addEventListener("change", (event) => {
         return;
       }
 
-      // ✅ 1. Recria o dropdown
       montarDropdownCategorias();
-
-      // ✅ 2. Seleciona a categoria CSV local
       elFiltroCategoria.value = "__csv_local__";
-
-      // ✅ 3. Atualiza o pool
       montarPoolPorCategoria();
-
-      // ✅ 4. Inicia o estudo
       iniciarBloco(true);
     }
   });
@@ -129,18 +119,15 @@ elFiltroCategoria.onchange = () => {
   iniciarBloco(false);
 };
 
-// Atalhos
+// Atalhos de teclado
 document.addEventListener("keydown", e => {
-  if (e.code === "Space") {
-    e.preventDefault();
-    virarCard();
-  }
+  if (e.code === "Space") { e.preventDefault(); virarCard(); }
   if (e.key.toLowerCase() === "a") marcarResposta(true);
   if (e.key.toLowerCase() === "e") marcarResposta(false);
 });
 
 /*************************************************
- * CARREGAR CSV
+ * CARREGAR CSV DO SERVIDOR
  *************************************************/
 Papa.parse(CSV_FILE, {
   download: true,
@@ -150,9 +137,9 @@ Papa.parse(CSV_FILE, {
     todosCards = results.data
       .map(l => ({
         categoria: (l[0] || "").trim(),
-        alemao: (l[1] || "").trim(),
+        alemao:    (l[1] || "").trim(),
         portugues: (l[2] || "").trim(),
-        audio: (l[3] || "").trim()
+        audio:     (l[3] || "").trim()
       }))
       .filter(c => c.categoria && c.alemao && c.portugues);
 
@@ -166,82 +153,30 @@ Papa.parse(CSV_FILE, {
  * FUNÇÕES PRINCIPAIS
  *************************************************/
 function montarDropdownCategorias() {
-  const categoriasBase =
-    [...new Set(todosCards.map(c => c.categoria))].sort();
-
-  elFiltroCategoria.innerHTML = "";
-  elFiltroCategoria.add(new Option("Todas", "__todas__"));
-
-  categoriasBase.forEach(cat =>
-    elFiltroCategoria.add(new Option(cat, cat))
-  );
-
-  if (cardsCSVLocal.length > 0) {
-    elFiltroCategoria.add(
-      new Option("📁 CSV local", "__csv_local__")
-    );
-  }
-}
-function montarPoolPorCategoria() {
-  const cat = elFiltroCategoria.value;
-  poolIndices = [];
-  usandoCSVLocal = false;
-
-  if (cat === "__csv_local__") {
-    usandoCSVLocal = true;
-    for (let i = 0; i < cardsCSVLocal.length; i++) {
-      poolIndices.push(i);
-    }
-    return;
-  }
-
-  todosCards.forEach((c, i) => {
-    if (cat === "__todas__" || c.categoria === cat) {
-      poolIndices.push(i);
-    }
-  });
-}
-
-function mostrarCard() {
-  mostrandoFrente = true;
-
-  const idx = ordemBloco[pos];
-  const card = usandoCSVLocal
-    ? cardsCSVLocal[idx]
-    : todosCards[idx];
-
-  elCategoriaAtual.innerText = card.categoria;
-  elConteudo.innerText = card.alemao;
-
-  if (card.audio) {
-    elAudio.src = card.audio;
-    elAudio.style.display = "block";
-    if (audioLiberado) {
-      elAudio.currentTime = 0;
-      elAudio.play().catch(() => {});
-    }
-  } else {
-    elAudio.style.display = "none";
-  }
-}
-
-function montarDropdownCategorias() {
   const cats = [...new Set(todosCards.map(c => c.categoria))].sort();
 
   elFiltroCategoria.innerHTML = "";
   elFiltroCategoria.add(new Option("Todas", "__todas__"));
-
   cats.forEach(c => elFiltroCategoria.add(new Option(c, c)));
+
+  if (cardsCSVLocal.length > 0) {
+    elFiltroCategoria.add(new Option("📁 CSV local", "__csv_local__"));
+  }
 }
 
 function montarPoolPorCategoria() {
   const cat = elFiltroCategoria.value;
-  poolIndices = [];
+  poolIndices   = [];
+  usandoCSVLocal = false;
+
+  if (cat === "__csv_local__") {
+    usandoCSVLocal = true;
+    for (let i = 0; i < cardsCSVLocal.length; i++) poolIndices.push(i);
+    return;
+  }
 
   todosCards.forEach((c, i) => {
-    if (cat === "__todas__" || c.categoria === cat) {
-      poolIndices.push(i);
-    }
+    if (cat === "__todas__" || c.categoria === cat) poolIndices.push(i);
   });
 }
 
@@ -254,7 +189,7 @@ function embaralharArray(arr) {
 
 function iniciarBloco(embaralhar = false) {
   acertos = 0;
-  erros = 0;
+  erros   = 0;
   respondidos.clear();
   filaErros = [];
   pos = 0;
@@ -262,7 +197,6 @@ function iniciarBloco(embaralhar = false) {
   let base = [...poolIndices];
   if (embaralhar) embaralharArray(base);
 
-  // ✅ USA EXATAMENTE O VALOR SELECIONADO
   const tamanho = Math.min(TAMANHO_BLOCO, base.length);
   ordemBloco = base.slice(0, tamanho);
 
@@ -280,16 +214,14 @@ function iniciarBloco(embaralhar = false) {
 
 function mostrarCard() {
   mostrandoFrente = true;
-  const card = todosCards[ordemBloco[pos]];
+  const card = getCard(ordemBloco[pos]);
 
   elCategoriaAtual.innerText = card.categoria;
-  elConteudo.innerText = card.alemao;
+  elConteudo.innerText       = card.alemao;
 
   if (card.audio) {
-    elAudio.src = card.audio;
-    elAudio.style.display = "block";
-
-    // ✅ AUTOPLAY REAL (só após desbloqueio)
+    elAudio.src            = card.audio;
+    elAudio.style.display  = "block";
     if (audioLiberado) {
       elAudio.currentTime = 0;
       elAudio.play().catch(() => {});
@@ -300,7 +232,7 @@ function mostrarCard() {
 }
 
 function virarCard() {
-  const card = todosCards[ordemBloco[pos]];
+  const card = getCard(ordemBloco[pos]);
   mostrandoFrente = !mostrandoFrente;
   elConteudo.innerText = mostrandoFrente ? card.alemao : card.portugues;
 }
@@ -314,7 +246,6 @@ function tocarAudio() {
 function marcarResposta(correto) {
   const idx = ordemBloco[pos];
   if (respondidos.has(idx)) return;
-
   respondidos.add(idx);
 
   if (correto) {
@@ -338,7 +269,7 @@ function avancar() {
   if (pos >= ordemBloco.length) {
     if (filaErros.length > 0) {
       ordemBloco = ordemBloco.concat(filaErros);
-      filaErros = [];
+      filaErros  = [];
       elTotalBloco.innerText = ordemBloco.length;
     } else {
       alert("🎉 Bloco concluído!");
@@ -349,20 +280,15 @@ function avancar() {
   mostrarCard();
 }
 
-
 function atualizarContadores() {
-  // sessão atual
-  elAcertos.innerText = acertos;
-  elErros.innerText = erros;
+  elAcertos.innerText     = acertos;
+  elErros.innerText       = erros;
   elRespondidos.innerText = acertos + erros;
 
-  // histórico global
   document.getElementById("totalAcertosGlobal").innerText = totalAcertos;
-  document.getElementById("totalErrosGlobal").innerText = totalErros;
-  document.getElementById("totalGlobal").innerText =
-    totalAcertos + totalErros;
+  document.getElementById("totalErrosGlobal").innerText   = totalErros;
+  document.getElementById("totalGlobal").innerText        = totalAcertos + totalErros;
 }
-
 
 /*************************************************
  * TEMA ESCURO (persistente)
@@ -398,15 +324,15 @@ elCard.addEventListener("touchstart", e => {
 elCard.addEventListener("touchend", e => {
   if (xStart === null || yStart === null) return;
 
-  const t = e.changedTouches[0];
+  const t  = e.changedTouches[0];
   const dx = t.clientX - xStart;
   const dy = t.clientY - yStart;
 
   if (Math.abs(dx) > Math.abs(dy)) {
-    if (dx > 50) marcarResposta(true);   // 👉 direita = acerto
-    if (dx < -50) marcarResposta(false); // 👈 esquerda = erro
+    if (dx >  50) marcarResposta(true);
+    if (dx < -50) marcarResposta(false);
   } else {
-    if (dy < -50) virarCard(); // 👆 cima = virar
+    if (dy < -50) virarCard();
   }
 
   xStart = yStart = null;
