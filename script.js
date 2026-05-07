@@ -81,30 +81,52 @@ document.getElementById("csvLocal").addEventListener("change", (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
-  Papa.parse(file, {
-    delimiter: ";",
-    skipEmptyLines: true,
-    complete: (results) => {
-      cardsCSVLocal = results.data
-        .map(l => ({
-          categoria: (l[0] || "📁 CSV local").trim() || "📁 CSV local",
-          alemao:    (l[1] || "").trim(),
-          portugues: (l[2] || "").trim(),
-          audio:     (l[3] || "").trim()
-        }))
-        .filter(c => c.alemao && c.portugues);
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const raw = e.target.result;
 
-      if (cardsCSVLocal.length === 0) {
-        alert("CSV local vazio ou inválido.");
-        return;
+    // Detecta delimitador pela primeira linha
+    const primeiraLinha = raw.split(/\r?\n/)[0];
+    const qtdPV = (primeiraLinha.match(/;/g) || []).length;
+    const qtdVg = (primeiraLinha.match(/,/g) || []).length;
+    const delimitador = qtdPV >= qtdVg ? ";" : ",";
+
+    Papa.parse(raw, {
+      delimiter: delimitador,
+      skipEmptyLines: true,
+      complete: (results) => {
+        console.log("[CSV local] delimitador:", delimitador,
+                    "| linhas:", results.data.length,
+                    "| primeira:", results.data[0]);
+
+        cardsCSVLocal = results.data
+          .map(l => ({
+            categoria: (l[0] || "📁 CSV local").trim() || "📁 CSV local",
+            alemao:    (l[1] || "").trim(),
+            portugues: (l[2] || "").trim(),
+            audio:     (l[3] || "").trim()
+          }))
+          .filter(c => c.alemao && c.portugues);
+
+        if (cardsCSVLocal.length === 0) {
+          const exemplo = results.data[0] ? JSON.stringify(results.data[0]) : "vazio";
+          alert(
+            "CSV local vazio ou inválido.\n\n" +
+            "Primeira linha lida: " + exemplo + "\n" +
+            "Delimitador detectado: \"" + delimitador + "\"\n\n" +
+            "Formato esperado: categoria;frente;verso;audio"
+          );
+          return;
+        }
+
+        montarDropdownCategorias();
+        elFiltroCategoria.value = "__csv_local__";
+        montarPoolPorCategoria();
+        iniciarBloco(true);
       }
-
-      montarDropdownCategorias();
-      elFiltroCategoria.value = "__csv_local__";
-      montarPoolPorCategoria();
-      iniciarBloco(true);
-    }
-  });
+    });
+  };
+  reader.readAsText(file, "UTF-8");
 });
 
 elCard.onclick = virarCard;
