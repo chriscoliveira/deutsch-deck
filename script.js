@@ -98,12 +98,21 @@ document.getElementById("csvLocal").addEventListener("change", (event) => {
         .filter(c => c.alemao && c.portugues);
 
       if (cardsCSVLocal.length === 0) {
-        alert("CSV local inválido ou vazio.");
+        alert("CSV local vazio ou inválido.");
         return;
       }
 
-      usandoCSVLocal = true;
-      atualizarCategoriasComCSVLocal();
+      // ✅ 1. Recria o dropdown
+      montarDropdownCategorias();
+
+      // ✅ 2. Seleciona a categoria CSV local
+      elFiltroCategoria.value = "__csv_local__";
+
+      // ✅ 3. Atualiza o pool
+      montarPoolPorCategoria();
+
+      // ✅ 4. Inicia o estudo
+      iniciarBloco(true);
     }
   });
 });
