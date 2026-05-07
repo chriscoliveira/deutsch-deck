@@ -15,6 +15,9 @@ let pos = 0;
 let mostrandoFrente = true;
 let respondidos = new Set();
 
+let cardsCSVLocal = [];
+let usandoCSVLocal = false;
+
 let acertos = 0;
 let erros = 0;
 
@@ -76,6 +79,35 @@ document.getElementById("btnAcerto").onclick = () => marcarResposta(true);
 document.getElementById("btnErro").onclick = () => marcarResposta(false);
 document.getElementById("btnEmbaralhar").onclick = () => iniciarBloco(true);
 document.getElementById("btnNovoBloco").onclick = () => iniciarBloco(false);
+
+document.getElementById("csvLocal").addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  Papa.parse(file, {
+    delimiter: ";",
+    skipEmptyLines: true,
+    complete: (results) => {
+      cardsCSVLocal = results.data
+        .map(l => ({
+          categoria: "📁 CSV local",
+          alemao: (l[1] || "").trim(),
+          portugues: (l[2] || "").trim(),
+          audio: (l[3] || "").trim()
+        }))
+        .filter(c => c.alemao && c.portugues);
+
+      if (cardsCSVLocal.length === 0) {
+        alert("CSV local inválido ou vazio.");
+        return;
+      }
+
+      usandoCSVLocal = true;
+      atualizarCategoriasComCSVLocal();
+    }
+  });
+});
+
 elCard.onclick = virarCard;
 
 elTamanhoBloco.onchange = () => {
@@ -124,6 +156,66 @@ Papa.parse(CSV_FILE, {
 /*************************************************
  * FUNÇÕES PRINCIPAIS
  *************************************************/
+function montarDropdownCategorias() {
+  const categoriasBase =
+    [...new Set(todosCards.map(c => c.categoria))].sort();
+
+  elFiltroCategoria.innerHTML = "";
+  elFiltroCategoria.add(new Option("Todas", "__todas__"));
+
+  categoriasBase.forEach(cat =>
+    elFiltroCategoria.add(new Option(cat, cat))
+  );
+
+  if (cardsCSVLocal.length > 0) {
+    elFiltroCategoria.add(
+      new Option("📁 CSV local", "__csv_local__")
+    );
+  }
+}
+function montarPoolPorCategoria() {
+  const cat = elFiltroCategoria.value;
+  poolIndices = [];
+  usandoCSVLocal = false;
+
+  if (cat === "__csv_local__") {
+    usandoCSVLocal = true;
+    for (let i = 0; i < cardsCSVLocal.length; i++) {
+      poolIndices.push(i);
+    }
+    return;
+  }
+
+  todosCards.forEach((c, i) => {
+    if (cat === "__todas__" || c.categoria === cat) {
+      poolIndices.push(i);
+    }
+  });
+}
+
+function mostrarCard() {
+  mostrandoFrente = true;
+
+  const idx = ordemBloco[pos];
+  const card = usandoCSVLocal
+    ? cardsCSVLocal[idx]
+    : todosCards[idx];
+
+  elCategoriaAtual.innerText = card.categoria;
+  elConteudo.innerText = card.alemao;
+
+  if (card.audio) {
+    elAudio.src = card.audio;
+    elAudio.style.display = "block";
+    if (audioLiberado) {
+      elAudio.currentTime = 0;
+      elAudio.play().catch(() => {});
+    }
+  } else {
+    elAudio.style.display = "none";
+  }
+}
+
 function montarDropdownCategorias() {
   const cats = [...new Set(todosCards.map(c => c.categoria))].sort();
 
