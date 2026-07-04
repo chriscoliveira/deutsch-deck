@@ -1,0 +1,374 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.app { padding: 1rem 0; max-width: 680px; }
+.header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+.flag { font-size: 28px; }
+.header-text h2 { font-size: 18px; font-weight: 500; color: var(--text-primary); }
+.header-text p { font-size: 13px; color: var(--text-secondary); }
+.theme-selector { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.theme-btn { padding: 6px 14px; border-radius: var(--radius); border: 0.5px solid var(--border-strong); background: var(--surface-2); color: var(--text-secondary); font-size: 13px; cursor: pointer; transition: all 0.15s; }
+.theme-btn.active { background: var(--bg-accent); border-color: var(--border-accent); color: var(--text-accent); font-weight: 500; }
+.progress-bar-wrap { background: var(--surface-1); border-radius: 99px; height: 6px; margin-bottom: 0.5rem; }
+.progress-bar { background: var(--fill-accent); height: 6px; border-radius: 99px; transition: width 0.4s ease; }
+.progress-text { font-size: 12px; color: var(--text-muted); margin-bottom: 1.5rem; }
+.card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+.word-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+.word-de { font-size: 22px; font-weight: 500; color: var(--text-primary); }
+.word-num { font-size: 12px; color: var(--text-muted); background: var(--surface-1); padding: 2px 8px; border-radius: 99px; }
+.word-pt { font-size: 15px; color: var(--text-accent); margin-bottom: 0.5rem; font-weight: 500; }
+.definition { font-size: 14px; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.6; }
+.section-label { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+.examples { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
+.example { background: var(--surface-1); border-left: 2px solid var(--border-accent); border-radius: 0 var(--radius) var(--radius) 0; padding: 8px 12px; font-size: 13px; line-height: 1.6; }
+.example .de { color: var(--text-primary); font-style: italic; }
+.example .pt { color: var(--text-muted); font-size: 12px; }
+.trick { background: var(--bg-warning); border: 0.5px solid var(--border-warning); border-radius: var(--radius); padding: 10px 12px; font-size: 13px; color: var(--text-primary); line-height: 1.6; }
+.trick-icon { margin-right: 6px; color: var(--text-warning); }
+.nav-row { display: flex; gap: 10px; margin-top: 1rem; }
+.nav-btn { flex: 1; padding: 10px; border-radius: var(--radius); border: 0.5px solid var(--border-strong); background: var(--surface-2); color: var(--text-primary); font-size: 14px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.nav-btn:hover { background: var(--surface-1); }
+.nav-btn.primary { background: var(--fill-accent); border-color: transparent; color: var(--on-accent); }
+.nav-btn.primary:hover { opacity: 0.9; }
+.nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.quiz-panel { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+.quiz-title { font-size: 16px; font-weight: 500; color: var(--text-primary); margin-bottom: 0.3rem; }
+.quiz-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 1.25rem; }
+.quiz-question { font-size: 15px; color: var(--text-primary); margin-bottom: 1rem; font-weight: 500; line-height: 1.6; }
+.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+.opt-btn { padding: 10px 14px; border-radius: var(--radius); border: 0.5px solid var(--border-strong); background: var(--surface-1); color: var(--text-primary); font-size: 13px; cursor: pointer; text-align: left; transition: all 0.2s; line-height: 1.4; }
+.opt-btn:hover:not(:disabled) { background: var(--bg-accent); border-color: var(--border-accent); }
+.opt-btn.correct { background: var(--bg-success); border-color: var(--border-success); color: var(--text-success); }
+.opt-btn.wrong { background: var(--bg-danger); border-color: var(--border-danger); color: var(--text-danger); }
+.opt-btn:disabled { cursor: default; }
+.feedback { padding: 10px 14px; border-radius: var(--radius); font-size: 14px; margin-bottom: 1rem; line-height: 1.5; }
+.feedback.ok { background: var(--bg-success); color: var(--text-success); }
+.feedback.err { background: var(--bg-danger); color: var(--text-danger); }
+.score-bar { display: flex; gap: 6px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.score-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border-strong); }
+.score-dot.hit { background: var(--fill-success); }
+.score-dot.miss { background: var(--fill-danger); }
+.group-result { text-align: center; padding: 1.5rem 1rem; }
+.result-big { font-size: 40px; margin-bottom: 0.5rem; }
+.result-msg { font-size: 16px; font-weight: 500; color: var(--text-primary); margin-bottom: 0.5rem; }
+.result-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 1.25rem; }
+.loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; gap: 1rem; }
+.spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--fill-accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; color: var(--text-secondary); }
+.group-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+.gn-btn { padding: 4px 10px; border-radius: 99px; font-size: 12px; border: 0.5px solid var(--border); background: var(--surface-1); color: var(--text-muted); cursor: pointer; }
+.gn-btn.active { background: var(--bg-accent); border-color: var(--border-accent); color: var(--text-accent); }
+.gn-btn.done { background: var(--bg-success); border-color: var(--border-success); color: var(--text-success); }
+.mode-switcher { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+.mode-btn { padding: 6px 16px; border-radius: var(--radius); border: 0.5px solid var(--border); background: var(--surface-1); color: var(--text-secondary); font-size: 13px; cursor: pointer; }
+.mode-btn.active { background: var(--surface-2); border-color: var(--border-strong); color: var(--text-primary); font-weight: 500; }
+</style>
+
+<div class="app" id="root">
+  <div class="header">
+    <span class="flag">🇩🇪</span>
+    <div class="header-text">
+      <h2>Deutsch Vocab Master</h2>
+      <p>200 palavras · definições · exemplos · truques · quiz</p>
+    </div>
+  </div>
+  <div id="main"></div>
+</div>
+
+<script>
+const THEMES = {
+  negocios: {
+    label: '💼 Negócios',
+    words: [
+      { de: 'das Unternehmen', pt: 'a empresa', def: 'Uma organização que faz negócios com fim lucrativo.', ex: [{ de: 'Das Unternehmen hat viele Mitarbeiter.', pt: 'A empresa tem muitos funcionários.' }, { de: 'Sie gründete ein kleines Unternehmen.', pt: 'Ela fundou uma pequena empresa.' }], trick: '🎯 "Unter" = sob + "nehmen" = pegar. Imagina alguém que está "pegando o mundo por baixo" — isso é um empreendedor!' },
+      { de: 'der Vertrag', pt: 'o contrato', def: 'Acordo formal e vinculante entre duas partes.', ex: [{ de: 'Bitte unterschreiben Sie den Vertrag.', pt: 'Por favor, assine o contrato.' }, { de: 'Der Vertrag läuft drei Jahre.', pt: 'O contrato dura três anos.' }], trick: '📜 "Ver-TRAG" — pensa em "Drag" em inglês: o contrato te arrastra (drag) para obrigações legais!' },
+      { de: 'die Rechnung', pt: 'a fatura / conta', def: 'Documento que pede pagamento por um serviço ou produto.', ex: [{ de: 'Ich habe die Rechnung noch nicht bezahlt.', pt: 'Ainda não paguei a fatura.' }, { de: 'Können Sie mir die Rechnung schicken?', pt: 'Pode me mandar a conta?' }], trick: '🧮 "Rechnung" vem de "rechnen" (calcular). RECH-nung = RECalcular. A conta é sempre um recálculo do que você gastou!' },
+      { de: 'die Besprechung', pt: 'a reunião', def: 'Encontro profissional para discutir assuntos de trabalho.', ex: [{ de: 'Die Besprechung beginnt um neun Uhr.', pt: 'A reunião começa às nove horas.' }, { de: 'Er hat heute viele Besprechungen.', pt: 'Ele tem muitas reuniões hoje.' }], trick: '🗣️ "Be-SPRECHEN" = falar sobre algo. Reunião é o lugar onde todo mundo BE-SPRECHEN (fala demais sobre tudo)!' },
+      { de: 'der Gewinn', pt: 'o lucro / ganho', def: 'O dinheiro que sobra depois de pagar todas as despesas.', ex: [{ de: 'Der Gewinn stieg im letzten Jahr.', pt: 'O lucro cresceu no ano passado.' }, { de: 'Wir haben keinen Gewinn gemacht.', pt: 'Não tivemos lucro.' }], trick: '🏆 "GEWINN" soa como "win" em inglês. Lucro é quando você GANHA (win)! Simples assim.' },
+      { de: 'die Investition', pt: 'o investimento', def: 'Aplicar dinheiro esperando retorno futuro.', ex: [{ de: 'Die Investition war ein Erfolg.', pt: 'O investimento foi um sucesso.' }, { de: 'Wir brauchen mehr Investitionen.', pt: 'Precisamos de mais investimentos.' }], trick: '💰 Quase idêntico ao português! Investition = Investimento. Só troca -mento por -tion e pronto!' },
+      { de: 'der Mitarbeiter', pt: 'o funcionário / colega', def: 'Pessoa que trabalha junto em uma empresa.', ex: [{ de: 'Wir haben zwanzig Mitarbeiter.', pt: 'Temos vinte funcionários.' }, { de: 'Die Mitarbeiter sind sehr motiviert.', pt: 'Os funcionários são muito motivados.' }], trick: '👥 "Mit" = com + "Arbeiter" = trabalhador. Um funcionário é literalmente um "com-trabalhador"! Mit-Arbeiter = colaborador.' },
+      { de: 'das Angebot', pt: 'a oferta / proposta', def: 'Proposta de venda com preço e condições.', ex: [{ de: 'Das Angebot läuft bis Freitag.', pt: 'A oferta vai até sexta-feira.' }, { de: 'Können Sie uns ein Angebot machen?', pt: 'Você pode nos fazer uma proposta?' }], trick: '🎁 "AN-gebot" = AN(uncie) + gebot (mandamento/lei). É como um "mandamento" anunciado de preço. Ou pensa: "Ahn, que oferta!"' },
+      { de: 'die Führung', pt: 'a liderança / gestão', def: 'Ato de liderar e gerir pessoas ou organização.', ex: [{ de: 'Die Führung des Unternehmens ist stark.', pt: 'A liderança da empresa é forte.' }, { de: 'Er hat die Führung übernommen.', pt: 'Ele assumiu a liderança.' }], trick: '🚗 "FÜHRUNG" vem de "führen" = conduzir/guiar. É a mesma raiz do "Führer" (motorista). Liderar é como GUIAR um carro cheio de funcionários!' },
+      { de: 'der Umsatz', pt: 'o faturamento / receita', def: 'Total de dinheiro que a empresa recebe pelas vendas.', ex: [{ de: 'Der Umsatz wächst jedes Jahr.', pt: 'O faturamento cresce todo ano.' }, { de: 'Wie hoch ist Ihr Umsatz?', pt: 'Qual é o seu faturamento?' }], trick: '🔄 "Um" = em volta + "Satz" = frase/conjunto. Imagina o dinheiro dando uma VOLTA completa pelo caixa — isso é o faturamento!' },
+    ]
+  },
+  social: {
+    label: '🤝 Social',
+    words: [
+      { de: 'sich vorstellen', pt: 'se apresentar', def: 'Dizer quem você é para alguém pela primeira vez.', ex: [{ de: 'Darf ich mich vorstellen? Ich bin Klaus.', pt: 'Posso me apresentar? Sou Klaus.' }, { de: 'Er hat sich ihr vorgestellt.', pt: 'Ele se apresentou a ela.' }], trick: '🪞 "VOR-stellen" = colocar NA FRENTE. Quando você se apresenta, você literalmente se "coloca na frente" das pessoas!' },
+      { de: 'die Einladung', pt: 'o convite', def: 'Pedido formal para que alguém participe de um evento.', ex: [{ de: 'Danke für die Einladung!', pt: 'Obrigado pelo convite!' }, { de: 'Ich habe eine Einladung zur Party bekommen.', pt: 'Recebi um convite para a festa.' }], trick: '📨 "EIN-ladung" = EIN (um/dentro) + laden (carregar/convidar). Um convite é um "carregamento" de você para dentro de um evento!' },
+      { de: 'die Verabredung', pt: 'o encontro / compromisso', def: 'Combinação de se encontrar com alguém em hora e local.', ex: [{ de: 'Ich habe heute eine Verabredung.', pt: 'Tenho um encontro hoje.' }, { de: 'Wir haben eine Verabredung um acht Uhr.', pt: 'Temos um encontro às oito horas.' }], trick: '📅 "Ver-abredet" = foi acordado/combinado. Lembra "ABRE" em português? Você "abre" espaço na agenda para alguém!' },
+      { de: 'sich bedanken', pt: 'agradecer', def: 'Expressar gratidão por algo que alguém fez.', ex: [{ de: 'Ich möchte mich herzlich bedanken.', pt: 'Gostaria de agradecer de coração.' }, { de: 'Sie hat sich für das Geschenk bedankt.', pt: 'Ela agradeceu pelo presente.' }], trick: '🙏 "DANK" = obrigado em alemão. Bedanken tem DANK no meio! É literalmente "obrigado-izar" alguém!' },
+      { de: 'die Feier', pt: 'a celebração / festa', def: 'Evento para comemorar algo especial.', ex: [{ de: 'Die Feier war wunderschön.', pt: 'A celebração foi lindíssima.' }, { de: 'Wann ist die Feier?', pt: 'Quando é a festa?' }], trick: '🎉 "FEIER" soa como "FAIR" em inglês. Uma festa deveria ser fair (justa) para todos os convidados. E também soa como "FEIRa" — festa animada!' },
+      { de: 'das Gespräch', pt: 'a conversa', def: 'Troca de palavras entre duas ou mais pessoas.', ex: [{ de: 'Das war ein interessantes Gespräch.', pt: 'Foi uma conversa interessante.' }, { de: 'Wir müssen ein Gespräch führen.', pt: 'Precisamos ter uma conversa.' }], trick: '💬 "Ge-SPRÄCH" vem de "sprechen" (falar). É a VERSÃO COLETIVA de falar. Ge- em alemão indica coisa coletiva. Uma conversa é um "falar coletivo"!' },
+      { de: 'kennenlernen', pt: 'conhecer (pela primeira vez)', def: 'Encontrar e aprender sobre alguém novo.', ex: [{ de: 'Es war schön, Sie kennenzulernen.', pt: 'Foi um prazer conhecê-lo.' }, { de: 'Ich möchte deine Familie kennenlernen.', pt: 'Quero conhecer sua família.' }], trick: '🔍 "KENNEN" = conhecer + "LERNEN" = aprender. Conhecer alguém é literalmente APRENDER sobre quem ela CONHECE. Ken-nen-ler-nen = aprenda a conhecer!' },
+      { de: 'einladen', pt: 'convidar', def: 'Pedir a alguém que venha a algum lugar ou evento.', ex: [{ de: 'Ich lade dich zum Essen ein.', pt: 'Te convido para jantar.' }, { de: 'Er hat alle seine Freunde eingeladen.', pt: 'Ele convidou todos os amigos.' }], trick: '🚪 "EIN" = dentro + "LADEN" = carregar. Convidar é "carregar alguém para dentro" da sua casa. EIN-laden = trazer para dentro!' },
+      { de: 'die Entschuldigung', pt: 'o pedido de desculpa / licença', def: 'Palavra usada para pedir desculpa ou chamar atenção.', ex: [{ de: 'Entschuldigung, wo ist der Bahnhof?', pt: 'Com licença, onde fica a estação?' }, { de: 'Ich bitte um Entschuldigung.', pt: 'Peço desculpas.' }], trick: '😬 "SCHULD" = culpa/dívida. Entschuldigung = des-culpa. Estás tirando a culpa (Schuld) de alguém. ENT = tirar. É literalmente "de-culpar"!' },
+      { de: 'sich freuen', pt: 'estar feliz / alegrar-se', def: 'Sentir alegria por algo presente ou futuro.', ex: [{ de: 'Ich freue mich auf das Wochenende.', pt: 'Estou animado com o fim de semana.' }, { de: 'Sie freut sich über das Geschenk.', pt: 'Ela ficou feliz com o presente.' }], trick: '😊 "FREUDE" = alegria. "Freund" = amigo. Amigos te fazem FREUDE! Sich freuen é ter a sensação de estar com um Freund (amigo)!' },
+    ]
+  },
+  viagem: {
+    label: '✈️ Viagem',
+    words: [
+      { de: 'der Flughafen', pt: 'o aeroporto', def: 'Local onde aviões decolam e pousam, com infraestrutura para passageiros.', ex: [{ de: 'Der Flughafen ist sehr groß.', pt: 'O aeroporto é muito grande.' }, { de: 'Wann kommen wir am Flughafen an?', pt: 'Quando chegamos ao aeroporto?' }], trick: '✈️ "FLUG" = voo + "HAFEN" = porto. Aeroporto é literalmente o "porto de voos"! Como porto é para barcos, Hafen é para aviões.' },
+      { de: 'das Gepäck', pt: 'a bagagem', def: 'Malas e pertences que você leva numa viagem.', ex: [{ de: 'Mein Gepäck ist zu schwer.', pt: 'Minha bagagem está muito pesada.' }, { de: 'Haben Sie Gepäck aufzugeben?', pt: 'Você tem bagagem para despachar?' }], trick: '🧳 "Ge-PÄCK" vem de "packen" = empacotar/fazer as malas. É literalmente "o conjunto das coisas empacotadas". Ge-päck = empacotado!' },
+      { de: 'die Unterkunft', pt: 'a acomodação / hospedagem', def: 'Lugar onde você fica dormindo durante a viagem.', ex: [{ de: 'Die Unterkunft ist sehr komfortabel.', pt: 'A acomodação é muito confortável.' }, { de: 'Haben Sie eine Unterkunft gebucht?', pt: 'Você reservou uma hospedagem?' }], trick: '🏨 "UNTER" = sob/embaixo + "KUNFT" = vinda. Acomodação é o lugar para onde você "vem e fica embaixo de um teto". É seu porto seguro!' },
+      { de: 'der Reisepass', pt: 'o passaporte', def: 'Documento oficial de identidade para viagens internacionais.', ex: [{ de: 'Ich habe meinen Reisepass vergessen.', pt: 'Esqueci meu passaporte.' }, { de: 'Zeigen Sie mir Ihren Reisepass, bitte.', pt: 'Mostre-me seu passaporte, por favor.' }], trick: '📘 "REISE" = viagem + "PASS" = passe/passagem. Passaporte é a "passagem da viagem"! Em português também: PASSA-porte = portão que você PASSA!' },
+      { de: 'die Besichtigung', pt: 'o passeio turístico / visita', def: 'Visita a lugares de interesse histórico ou cultural.', ex: [{ de: 'Die Besichtigung des Museums war toll.', pt: 'A visita ao museu foi ótima.' }, { de: 'Wir machen morgen eine Besichtigung.', pt: 'Faremos um passeio amanhã.' }], trick: '👀 "Be-SICHT-igung" vem de "Sicht" = visão/vista. É literalmente "o ato de OLHAR direito para algo". Sight-seeing em inglês tem a mesma lógica!' },
+      { de: 'die Unterkunft', pt: 'a acomodação / hospedagem', def: 'Lugar onde você fica dormindo durante a viagem.', ex: [{ de: 'Die Unterkunft ist sehr komfortabel.', pt: 'A acomodação é muito confortável.' }, { de: 'Haben Sie eine Unterkunft gebucht?', pt: 'Você reservou uma hospedagem?' }], trick: '🏨 "UNTER" = sob + "KUNFT" = chegada/vinda. É o lugar para onde você "chega e fica embaixo de um teto"!' },
+      { de: 'die Verspätung', pt: 'o atraso', def: 'Quando algo chega ou sai mais tarde do horário previsto.', ex: [{ de: 'Der Zug hat Verspätung.', pt: 'O trem está atrasado.' }, { de: 'Wie lange ist die Verspätung?', pt: 'Qual é o tempo de atraso?' }], trick: '⏰ "Ver-SPÄT-ung" vem de "spät" = tarde. VERspätung = muito tarde demais! "Spät" em alemão = "tarde" em português. Claro!' },
+      { de: 'der Zug', pt: 'o trem', def: 'Veículo sobre trilhos para transporte de passageiros.', ex: [{ de: 'Der Zug fährt um zehn Uhr ab.', pt: 'O trem parte às dez horas.' }, { de: 'Ich nehme den Zug nach Berlin.', pt: 'Pego o trem para Berlim.' }], trick: '🚂 "ZUG" também significa "puxão" ou "tiragem". O trem PUXA vagões! Imagina um ZUG gigante puxando todo mundo para Berlim.' },
+      { de: 'die Sehenswürdigkeit', pt: 'o ponto turístico', def: 'Lugar famoso e interessante que vale a pena visitar.', ex: [{ de: 'Berlin hat viele Sehenswürdigkeiten.', pt: 'Berlim tem muitos pontos turísticos.' }, { de: 'Das ist die bekannteste Sehenswürdigkeit.', pt: 'Este é o ponto turístico mais famoso.' }], trick: '🏛️ "SEHEN" (ver) + "WÜRDIG" (digno) + "KEIT" (sufixo). É literalmente "coisa DIGNA DE SER VISTA"! Uma "sehenswürdigkeit" merece ser vista (würdig).' },
+      { de: 'buchen', pt: 'reservar', def: 'Garantir um lugar ou serviço com antecedência pagando ou registrando.', ex: [{ de: 'Ich habe das Hotel gebucht.', pt: 'Reservei o hotel.' }, { de: 'Haben Sie einen Tisch gebucht?', pt: 'Você reservou uma mesa?' }], trick: '📖 "BUCHEN" vem de "Buch" = livro. Reservar era literalmente escrever seu nome num LIVRO de reservas! Buchen = anotar no livro!' },
+    ]
+  }
+};
+
+const state = {
+  theme: null,
+  words: [],
+  mode: 'study',
+  wordIdx: 0,
+  groupIdx: 0,
+  quizState: null,
+  groupsDone: [],
+};
+
+const GROUP_SIZE = 5;
+
+function getGroups() {
+  const groups = [];
+  for (let i = 0; i < state.words.length; i += GROUP_SIZE) {
+    groups.push(state.words.slice(i, i + GROUP_SIZE));
+  }
+  return groups;
+}
+
+function getGroup(idx) {
+  return state.words.slice(idx * GROUP_SIZE, (idx + 1) * GROUP_SIZE);
+}
+
+function render() {
+  const root = document.getElementById('main');
+  if (!state.theme) {
+    root.innerHTML = renderThemeSelect();
+    return;
+  }
+  const groups = getGroups();
+  const currentGroup = getGroup(state.groupIdx);
+  let html = renderHeader(groups);
+  if (state.mode === 'study') {
+    const word = currentGroup[state.wordIdx];
+    html += renderWord(word, state.wordIdx, state.groupIdx, currentGroup.length);
+  } else {
+    html += renderQuiz(currentGroup);
+  }
+  root.innerHTML = html;
+  attachHandlers(currentGroup, groups);
+}
+
+function renderThemeSelect() {
+  return `
+    <p style="font-size:14px;color:var(--text-secondary);margin-bottom:1rem;">Escolha um tema para começar:</p>
+    <div class="theme-selector">
+      ${Object.entries(THEMES).map(([k,v]) => `<button class="theme-btn" onclick="selectTheme('${k}')">${v.label}</button>`).join('')}
+    </div>
+    <div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:14px;">
+      <i class="ti ti-book-open" style="font-size:32px;display:block;margin-bottom:0.5rem" aria-hidden="true"></i>
+      Cada tema tem 10 palavras com definição, exemplos reais e truques de memória.<br>Quiz automático a cada 5 palavras!
+    </div>`;
+}
+
+function selectTheme(key) {
+  state.theme = key;
+  state.words = THEMES[key].words.filter((w,i,arr) => arr.findIndex(x=>x.de===w.de)===i);
+  state.wordIdx = 0;
+  state.groupIdx = 0;
+  state.mode = 'study';
+  state.groupsDone = [];
+  state.quizState = null;
+  render();
+}
+
+function renderHeader(groups) {
+  const total = state.words.length;
+  const done = state.groupIdx * GROUP_SIZE + (state.mode === 'quiz' ? GROUP_SIZE : state.wordIdx);
+  const pct = Math.round((done / total) * 100);
+  const groupNav = groups.map((_, i) => {
+    let cls = 'gn-btn';
+    if (i === state.groupIdx) cls += ' active';
+    else if (state.groupsDone.includes(i)) cls += ' done';
+    return `<button class="${cls}" onclick="goGroup(${i})">Grupo ${i+1}</button>`;
+  }).join('');
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+      <div style="font-size:13px;color:var(--text-secondary);">${THEMES[state.theme].label}</div>
+      <button style="font-size:12px;color:var(--text-muted);background:none;border:none;cursor:pointer;" onclick="changeTheme()">trocar tema</button>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+    <p class="progress-text">${done} de ${total} palavras · ${pct}%</p>
+    <div class="group-nav">${groupNav}</div>
+    <div class="mode-switcher">
+      <button class="mode-btn ${state.mode==='study'?'active':''}" onclick="setMode('study')"><i class="ti ti-book" aria-hidden="true"></i> Estudar</button>
+      <button class="mode-btn ${state.mode==='quiz'?'active':''}" onclick="setMode('quiz')"><i class="ti ti-help" aria-hidden="true"></i> Quiz</button>
+    </div>`;
+}
+
+function renderWord(word, idx, groupIdx, groupLen) {
+  const globalIdx = groupIdx * GROUP_SIZE + idx + 1;
+  return `
+    <div class="card">
+      <div class="word-header">
+        <div>
+          <div class="word-de">${word.de}</div>
+          <div class="word-pt">${word.pt}</div>
+        </div>
+        <span class="word-num">#${globalIdx}</span>
+      </div>
+      <p class="section-label">Definição</p>
+      <p class="definition">${word.def}</p>
+      <p class="section-label">Exemplos reais</p>
+      <div class="examples">
+        ${word.ex.map(e=>`<div class="example"><div class="de">${e.de}</div><div class="pt">${e.pt}</div></div>`).join('')}
+      </div>
+      <p class="section-label">Truque de memória</p>
+      <div class="trick"><span class="trick-icon"><i class="ti ti-bulb" aria-hidden="true"></i></span>${word.trick}</div>
+    </div>
+    <div class="nav-row">
+      <button class="nav-btn" id="prevBtn" ${idx===0 && groupIdx===0?'disabled':''}><i class="ti ti-arrow-left" aria-hidden="true"></i> Anterior</button>
+      ${idx === groupLen-1
+        ? `<button class="nav-btn primary" id="toQuizBtn"><i class="ti ti-help" aria-hidden="true"></i> Fazer quiz ↗</button>`
+        : `<button class="nav-btn primary" id="nextBtn">Próxima <i class="ti ti-arrow-right" aria-hidden="true"></i></button>`
+      }
+    </div>`;
+}
+
+function renderQuiz(group) {
+  if (!state.quizState) initQuiz(group);
+  const qs = state.quizState;
+  if (qs.finished) return renderGroupResult(qs);
+  const q = qs.questions[qs.qIdx];
+  const dots = qs.questions.map((_,i) => {
+    if (i < qs.qIdx) return `<div class="score-dot ${qs.results[i]?'hit':'miss'}"></div>`;
+    if (i === qs.qIdx) return `<div class="score-dot" style="background:var(--fill-accent)"></div>`;
+    return `<div class="score-dot"></div>`;
+  }).join('');
+  const feedback = qs.lastFeedback;
+  return `
+    <div class="quiz-panel">
+      <div class="quiz-title"><i class="ti ti-help-circle" aria-hidden="true"></i> Quiz — Grupo ${state.groupIdx+1}</div>
+      <div class="quiz-sub">Pergunta ${qs.qIdx+1} de ${qs.questions.length}</div>
+      <div class="score-bar">${dots}</div>
+      <div class="quiz-question">${q.question}</div>
+      <div class="quiz-options">
+        ${q.options.map((opt,i)=>{
+          let cls = 'opt-btn';
+          if (feedback) {
+            if (i === q.correct) cls += ' correct';
+            else if (i === qs.chosenIdx && qs.chosenIdx !== q.correct) cls += ' wrong';
+          }
+          return `<button class="${cls}" ${feedback?'disabled':''} onclick="answerQuiz(${i})">${opt}</button>`;
+        }).join('')}
+      </div>
+      ${feedback ? `<div class="feedback ${qs.results[qs.qIdx]?'ok':'err'}">${feedback}</div>` : ''}
+      ${feedback ? `<button class="nav-btn primary" onclick="nextQuestion()">Próxima pergunta <i class="ti ti-arrow-right" aria-hidden="true"></i></button>` : ''}
+    </div>`;
+}
+
+function renderGroupResult(qs) {
+  const hits = qs.results.filter(Boolean).length;
+  const total = qs.results.length;
+  const pct = Math.round((hits/total)*100);
+  const perfect = pct === 100;
+  const groups = getGroups();
+  const hasNext = state.groupIdx < groups.length - 1;
+  return `
+    <div class="quiz-panel">
+      <div class="group-result">
+        <div class="result-big">${perfect?'🏆':'📚'}</div>
+        <div class="result-msg">${perfect?'Perfeito! 100%!':'Quase lá!'}</div>
+        <div class="result-sub">${hits} de ${total} corretas (${pct}%)</div>
+        ${!perfect ? `<button class="nav-btn" style="margin:0 auto 1rem;max-width:260px" onclick="retryQuiz()"><i class="ti ti-refresh" aria-hidden="true"></i> Repetir quiz até 100%</button>` : ''}
+        ${perfect && hasNext ? `<button class="nav-btn primary" style="margin:0 auto;max-width:260px" onclick="nextGroup()">Próximo grupo <i class="ti ti-arrow-right" aria-hidden="true"></i></button>` : ''}
+        ${perfect && !hasNext ? `<div style="font-size:14px;color:var(--text-success);margin-top:0.5rem;font-weight:500">🎉 Você concluiu todo o tema!</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function initQuiz(group) {
+  const questions = group.map((word, i) => {
+    const others = group.filter((_,j)=>j!==i).map(w=>w.pt);
+    const shuffledOthers = others.sort(()=>Math.random()-0.5).slice(0,3);
+    const opts = [...shuffledOthers, word.pt].sort(()=>Math.random()-0.5);
+    const correct = opts.indexOf(word.pt);
+    return { question: `O que significa "${word.de}"?`, options: opts, correct, word };
+  }).sort(()=>Math.random()-0.5);
+  state.quizState = { questions, qIdx: 0, results: [], lastFeedback: null, chosenIdx: null, finished: false };
+}
+
+function answerQuiz(i) {
+  const qs = state.quizState;
+  const q = qs.questions[qs.qIdx];
+  qs.chosenIdx = i;
+  const correct = i === q.correct;
+  qs.results[qs.qIdx] = correct;
+  qs.lastFeedback = correct
+    ? `✅ Correto! "${q.word.de}" = ${q.word.pt}. ${q.word.trick.slice(0,60)}...`
+    : `❌ Ops! Era "${q.word.pt}". Lembra: ${q.word.trick.slice(0,60)}...`;
+  render();
+}
+
+function nextQuestion() {
+  const qs = state.quizState;
+  qs.qIdx++;
+  qs.lastFeedback = null;
+  qs.chosenIdx = null;
+  if (qs.qIdx >= qs.questions.length) qs.finished = true;
+  render();
+}
+
+function retryQuiz() {
+  state.quizState = null;
+  initQuiz(getGroup(state.groupIdx));
+  render();
+}
+
+function nextGroup() {
+  if (!state.groupsDone.includes(state.groupIdx)) state.groupsDone.push(state.groupIdx);
+  state.groupIdx++;
+  state.wordIdx = 0;
+  state.mode = 'study';
+  state.quizState = null;
+  render();
+}
+
+function attachHandlers(currentGroup, groups) {
+  document.getElementById('prevBtn')?.addEventListener('click', () => {
+    if (state.wordIdx > 0) state.wordIdx--;
+    else if (state.groupIdx > 0) { state.groupIdx--; state.wordIdx = GROUP_SIZE - 1; state.mode = 'study'; state.quizState = null; }
+    render();
+  });
+  document.getElementById('nextBtn')?.addEventListener('click', () => {
+    state.wordIdx++;
+    render();
+  });
+  document.getElementById('toQuizBtn')?.addEventListener('click', () => {
+    state.mode = 'quiz';
+    state.quizState = null;
+    render();
+  });
+}
+
+window.selectTheme = selectTheme;
+window.changeTheme = () => { state.theme = null; state.words = []; render(); };
+window.goGroup = (i) => { state.groupIdx = i; state.wordIdx = 0; state.mode = 'study'; state.quizState = null; render(); };
+window.setMode = (m) => { state.mode = m; if(m==='quiz') state.quizState = null; render(); };
+window.answerQuiz = answerQuiz;
+window.nextQuestion = nextQuestion;
+window.retryQuiz = retryQuiz;
+window.nextGroup = nextGroup;
+
+render();
+</script>
