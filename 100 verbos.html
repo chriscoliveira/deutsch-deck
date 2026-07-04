@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verben-Werkstatt · 100 Verbos Alemães</title>
+<style>
+  :root{
+    --bg: #14171a;
+    --bg-panel: #1c2024;
+    --bg-card: #20252a;
+    --line: #2c3238;
+    --brass: #c98a3e;
+    --brass-bright: #e3a95c;
+    --gear-green: #6f9c76;
+    --ink: #e9e4d8;
+    --ink-dim: #9aa1a8;
+    --red: #b25b52;
+    --font-display: 'Special Elite', 'Courier New', monospace;
+    --font-body: 'Fira Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  }
+  @font-face{
+    font-family:'Special Elite'; src: local('Courier New');
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(201,138,62,0.06), transparent 40%),
+      radial-gradient(circle at 90% 85%, rgba(111,156,118,0.05), transparent 45%),
+      var(--bg);
+    color:var(--ink);
+    font-family: var(--font-body);
+    min-height:100vh;
+    padding: 28px 16px 60px;
+  }
+  .wrap{max-width:920px; margin:0 auto;}
+
+  header.top{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    border-bottom: 2px solid var(--line);
+    padding-bottom:16px; margin-bottom:20px; flex-wrap:wrap; gap:14px;
+  }
+  .brand{display:flex; align-items:center; gap:14px;}
+  .cog{width:46px;height:46px; flex-shrink:0;}
+  .brand h1{
+    font-family: var(--font-display);
+    font-size: 1.7rem; letter-spacing:0.5px; margin:0; color:var(--brass-bright);
+    text-shadow: 0 0 18px rgba(227,169,92,0.15);
+  }
+  .brand p{margin:2px 0 0; color:var(--ink-dim); font-size:0.85rem;}
+  .stats{display:flex; gap:18px; align-items:center;}
+  .stat{text-align:right;}
+  .stat .num{font-family:var(--font-mono); font-size:1.5rem; color:var(--gear-green); font-weight:600;}
+  .stat .lbl{font-size:0.68rem; color:var(--ink-dim); text-transform:uppercase; letter-spacing:1px;}
+
+  .progress-track{
+    height:8px; background:var(--bg-panel); border:1px solid var(--line); border-radius:4px;
+    overflow:hidden; margin-bottom:22px;
+  }
+  .progress-fill{
+    height:100%; background:linear-gradient(90deg, var(--brass), var(--gear-green));
+    transition: width 0.4s ease;
+  }
+
+  nav.tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;}
+  .tab-btn{
+    background:var(--bg-panel); border:1px solid var(--line); color:var(--ink-dim);
+    padding:8px 14px; border-radius:6px; font-family:var(--font-body); font-size:0.85rem;
+    cursor:pointer; transition:.15s;
+  }
+  .tab-btn:hover{color:var(--ink); border-color:var(--brass);}
+  .tab-btn.active{background:var(--brass); color:#1a1508; border-color:var(--brass); font-weight:600;}
+
+  .mode-switch{display:flex; gap:8px; margin-bottom:22px;}
+  .mode-btn{
+    flex:1; background:var(--bg-card); border:1px solid var(--line); color:var(--ink);
+    padding:12px; border-radius:8px; cursor:pointer; font-size:0.92rem; font-family:var(--font-body);
+    transition:.15s; text-align:center;
+  }
+  .mode-btn.active{border-color:var(--gear-green); box-shadow: inset 0 0 0 1px var(--gear-green); color:var(--gear-green); font-weight:600;}
+
+  /* Flashcard */
+  #flash-panel{display:flex; flex-direction:column; align-items:center;}
+  .card-counter{color:var(--ink-dim); font-size:0.8rem; margin-bottom:10px; font-family:var(--font-mono);}
+  .card{
+    width:100%; max-width:520px; min-height:260px;
+    background:var(--bg-card); border:1px solid var(--line); border-radius:14px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:30px 26px; cursor:pointer; position:relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  .card .tag{
+    position:absolute; top:14px; left:14px; font-size:0.62rem; letter-spacing:1px;
+    text-transform:uppercase; color:var(--ink-dim); border:1px solid var(--line);
+    padding:3px 8px; border-radius:20px;
+  }
+  .card .infinitive{
+    font-family:var(--font-display); font-size:2.1rem; color:var(--brass-bright); text-align:center;
+  }
+  .card .hint{color:var(--ink-dim); font-size:0.78rem; margin-top:14px;}
+  .card .back-content{display:none; text-align:center; width:100%;}
+  .card.flipped .infinitive{display:none;}
+  .card.flipped .hint{display:none;}
+  .card.flipped .back-content{display:block;}
+  .back-content .pt{font-size:1.5rem; color:var(--ink); font-weight:600; margin-bottom:8px;}
+  .back-content .note{
+    font-family:var(--font-mono); font-size:0.82rem; color:var(--gear-green);
+    background:rgba(111,156,118,0.08); border:1px solid rgba(111,156,118,0.25);
+    padding:8px 12px; border-radius:6px; margin:10px 0; display:inline-block;
+  }
+  .back-content .example{color:var(--ink-dim); font-size:0.9rem; margin-top:10px; line-height:1.5;}
+  .back-content .example b{color:var(--ink); font-weight:500;}
+
+  .card-actions{display:flex; gap:12px; margin-top:18px; width:100%; max-width:520px;}
+  .card-actions button{
+    flex:1; padding:13px; border-radius:8px; border:1px solid var(--line); cursor:pointer;
+    font-family:var(--font-body); font-size:0.9rem; font-weight:600; transition:.15s;
+  }
+  .btn-review{background:transparent; color:var(--red); border-color:var(--red);}
+  .btn-review:hover{background:rgba(178,91,82,0.12);}
+  .btn-known{background:var(--gear-green); color:#0f1a10; border-color:var(--gear-green);}
+  .btn-known:hover{filter:brightness(1.1);}
+
+  /* Quiz */
+  #quiz-panel{display:none;}
+  .quiz-q{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:14px;
+    padding:28px; text-align:center; margin-bottom:16px;
+  }
+  .quiz-q .prompt-label{color:var(--ink-dim); font-size:0.75rem; text-transform:uppercase; letter-spacing:1px;}
+  .quiz-q .prompt-word{font-family:var(--font-display); font-size:2rem; color:var(--brass-bright); margin:8px 0;}
+  .options{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  @media(max-width:560px){.options{grid-template-columns:1fr;}}
+  .opt{
+    background:var(--bg-panel); border:1px solid var(--line); color:var(--ink);
+    padding:14px; border-radius:8px; cursor:pointer; font-size:0.92rem; text-align:left;
+    transition:.12s;
+  }
+  .opt:hover{border-color:var(--brass);}
+  .opt.correct{background:rgba(111,156,118,0.2); border-color:var(--gear-green); color:var(--gear-green);}
+  .opt.wrong{background:rgba(178,91,82,0.2); border-color:var(--red); color:var(--red);}
+  .quiz-feedback{text-align:center; min-height:24px; margin:14px 0; font-size:0.9rem; color:var(--ink-dim);}
+  .quiz-next{
+    display:block; margin:0 auto; background:var(--brass); color:#1a1508; border:none;
+    padding:12px 28px; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.9rem;
+  }
+  .quiz-next[disabled]{opacity:0.3; cursor:default;}
+
+  .empty{text-align:center; color:var(--ink-dim); padding:40px 20px;}
+  .reset-row{text-align:center; margin-top:32px;}
+  .reset-row button{
+    background:none; border:1px solid var(--line); color:var(--ink-dim); padding:8px 16px;
+    border-radius:6px; cursor:pointer; font-size:0.78rem;
+  }
+  .reset-row button:hover{border-color:var(--red); color:var(--red);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <svg class="cog" viewBox="0 0 100 100" fill="none">
+        <path d="M50 8 L58 8 L60 22 L70 26 L82 18 L88 24 L80 36 L84 46 L98 48 L98 56 L84 58 L80 68 L88 80 L82 86 L70 78 L60 82 L58 96 L50 96 L42 96 L40 82 L30 78 L18 86 L12 80 L20 68 L16 58 L2 56 L2 48 L16 46 L20 36 L12 24 L18 18 L30 26 L40 22 Z" stroke="#c98a3e" stroke-width="3" fill="#1c2024"/>
+        <circle cx="50" cy="52" r="16" stroke="#6f9c76" stroke-width="3" fill="#14171a"/>
+      </svg>
+      <div>
+        <h1>Verben-Werkstatt</h1>
+        <p>A oficina dos 100 verbos alemães mais comuns</p>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num" id="stat-mastered">0</div><div class="lbl">Dominados</div></div>
+      <div class="stat"><div class="num" id="stat-streak">0</div><div class="lbl">Sequência</div></div>
+    </div>
+  </header>
+
+  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <div class="mode-switch">
+    <button class="mode-btn active" id="mode-flash-btn">🃏 Flashcards</button>
+    <button class="mode-btn" id="mode-quiz-btn">🎯 Quiz</button>
+  </div>
+
+  <section id="flash-panel">
+    <div class="card-counter" id="flash-counter"></div>
+    <div class="card" id="card">
+      <div class="tag" id="card-tag"></div>
+      <div class="infinitive" id="card-front"></div>
+      <div class="hint">Toque no cartão para ver o significado</div>
+      <div class="back-content">
+        <div class="pt" id="card-pt"></div>
+        <div class="note" id="card-note"></div>
+        <div class="example" id="card-example"></div>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="btn-review" id="btn-review">Ainda não sei</button>
+      <button class="btn-known" id="btn-known">Já sei essa!</button>
+    </div>
+  </section>
+
+  <section id="quiz-panel">
+    <div class="quiz-q">
+      <div class="prompt-label">O que significa</div>
+      <div class="prompt-word" id="quiz-word"></div>
+    </div>
+    <div class="options" id="quiz-options"></div>
+    <div class="quiz-feedback" id="quiz-feedback"></div>
+    <button class="quiz-next" id="quiz-next" disabled>Próxima →</button>
+  </section>
+
+  <div class="reset-row">
+    <button id="reset-btn">Reiniciar progresso desta categoria</button>
+  </div>
+</div>
+
+<script>
+const VERBS = [
+{id:1,de:"sein",pt:"ser / estar",type:"modal",note:"ich bin, du bist, er ist, wir sind, ihr seid, sie sind",ex:"Ich bin Lehrer.",expt:"Eu sou professor."},
+{id:2,de:"haben",pt:"ter",type:"irregular",note:"ich habe, du hast, er hat",ex:"Ich habe einen Hund.",expt:"Eu tenho um cachorro."},
+{id:3,de:"werden",pt:"tornar-se / ficar",type:"irregular",note:"ich werde, du wirst, er wird",ex:"Er wird Arzt.",expt:"Ele vai virar médico."},
+{id:4,de:"können",pt:"poder / conseguir",type:"modal",note:"ich kann, du kannst, er kann",ex:"Ich kann gut kochen.",expt:"Eu sei cozinhar bem."},
+{id:5,de:"müssen",pt:"ter que / dever",type:"modal",note:"ich muss, du musst, er muss",ex:"Ich muss jetzt gehen.",expt:"Eu preciso ir agora."},
+{id:6,de:"sollen",pt:"dever (conselho)",type:"modal",note:"ich soll, du sollst, er soll",ex:"Du sollst mehr schlafen.",expt:"Você deveria dormir mais."},
+{id:7,de:"wollen",pt:"querer",type:"modal",note:"ich will, du willst, er will",ex:"Ich will nach Berlin fahren.",expt:"Eu quero ir para Berlim."},
+{id:8,de:"dürfen",pt:"poder (permissão)",type:"modal",note:"ich darf, du darfst, er darf",ex:"Darf ich rauchen?",expt:"Posso fumar?"},
+{id:9,de:"mögen",pt:"gostar de",type:"modal",note:"ich mag, du magst, er mag",ex:"Ich mag Schokolade.",expt:"Eu gosto de chocolate."},
+{id:10,de:"möchten",pt:"gostaria",type:"modal",note:"ich möchte, du möchtest, er möchte",ex:"Ich möchte einen Kaffee.",expt:"Eu gostaria de um café."},
+{id:11,de:"sagen",pt:"dizer",type:"regular",note:"regular: -e, -st, -t",ex:"Was sagst du?",expt:"O que você diz?"},
+{id:12,de:"machen",pt:"fazer",type:"regular",note:"regular",ex:"Was machst du heute?",expt:"O que você vai fazer hoje?"},
+{id:13,de:"geben",pt:"dar",type:"irregular",note:"du gibst, er gibt (e→i)",ex:"Gib mir das Buch.",expt:"Me dá o livro."},
+{id:14,de:"kommen",pt:"vir",type:"regular",note:"regular",ex:"Woher kommst du?",expt:"De onde você vem?"},
+{id:15,de:"gehen",pt:"ir / andar",type:"regular",note:"regular",ex:"Wir gehen ins Kino.",expt:"Nós vamos ao cinema."},
+{id:16,de:"sehen",pt:"ver",type:"irregular",note:"du siehst, er sieht (e→ie)",ex:"Siehst du das?",expt:"Você está vendo isso?"},
+{id:17,de:"wissen",pt:"saber (um fato)",type:"irregular",note:"ich weiß, du weißt, er weiß",ex:"Ich weiß es nicht.",expt:"Eu não sei."},
+{id:18,de:"lassen",pt:"deixar",type:"irregular",note:"du lässt, er lässt (a→ä)",ex:"Lass mich in Ruhe.",expt:"Me deixa em paz."},
+{id:19,de:"stehen",pt:"estar em pé / ficar",type:"regular",note:"regular",ex:"Das Auto steht dort.",expt:"O carro está ali parado."},
+{id:20,de:"finden",pt:"encontrar / achar",type:"regular",note:"regular",ex:"Ich finde das gut.",expt:"Eu acho isso bom."},
+{id:21,de:"bleiben",pt:"ficar / permanecer",type:"regular",note:"regular",ex:"Bleib hier!",expt:"Fique aqui!"},
+{id:22,de:"liegen",pt:"estar deitado / situar-se",type:"regular",note:"regular",ex:"Das Buch liegt auf dem Tisch.",expt:"O livro está em cima da mesa."},
+{id:23,de:"heißen",pt:"chamar-se",type:"regular",note:"regular",ex:"Wie heißt du?",expt:"Como você se chama?"},
+{id:24,de:"denken",pt:"pensar",type:"regular",note:"regular no Präsens (Perfekt: dachte)",ex:"Ich denke an dich.",expt:"Eu penso em você."},
+{id:25,de:"nehmen",pt:"pegar / tomar",type:"irregular",note:"du nimmst, er nimmt",ex:"Nimm das Geld.",expt:"Pega o dinheiro."},
+{id:26,de:"tun",pt:"fazer",type:"irregular",note:"ich tue, du tust, er tut",ex:"Was tust du gerade?",expt:"O que você está fazendo agora?"},
+{id:27,de:"glauben",pt:"acreditar / achar",type:"regular",note:"regular",ex:"Ich glaube dir.",expt:"Eu acredito em você."},
+{id:28,de:"halten",pt:"segurar / manter",type:"irregular",note:"du hältst, er hält (a→ä)",ex:"Halt den Ball!",expt:"Segura a bola!"},
+{id:29,de:"nennen",pt:"nomear / chamar",type:"regular",note:"regular no Präsens (Perfekt: nannte)",ex:"Man nennt ihn Chef.",expt:"Chamam ele de chefe."},
+{id:30,de:"zeigen",pt:"mostrar",type:"regular",note:"regular",ex:"Zeig mir den Weg.",expt:"Me mostra o caminho."},
+{id:31,de:"fragen",pt:"perguntar",type:"regular",note:"regular",ex:"Darf ich etwas fragen?",expt:"Posso perguntar algo?"},
+{id:32,de:"kennen",pt:"conhecer (pessoa/lugar)",type:"regular",note:"regular",ex:"Kennst du ihn?",expt:"Você o conhece?"},
+{id:33,de:"sprechen",pt:"falar",type:"irregular",note:"du sprichst, er spricht (e→i)",ex:"Sprichst du Deutsch?",expt:"Você fala alemão?"},
+{id:34,de:"bringen",pt:"trazer",type:"regular",note:"regular no Präsens (Perfekt: brachte)",ex:"Bring mir Wasser.",expt:"Traz água para mim."},
+{id:35,de:"leben",pt:"viver",type:"regular",note:"regular",ex:"Ich lebe in Brasilien.",expt:"Eu vivo no Brasil."},
+{id:36,de:"fahren",pt:"dirigir / ir (de veículo)",type:"irregular",note:"du fährst, er fährt (a→ä)",ex:"Wir fahren nach Hause.",expt:"Nós vamos para casa (de carro)."},
+{id:37,de:"meinen",pt:"achar / opinar",type:"regular",note:"regular",ex:"Was meinst du?",expt:"O que você acha?"},
+{id:38,de:"brauchen",pt:"precisar",type:"regular",note:"regular",ex:"Ich brauche Hilfe.",expt:"Eu preciso de ajuda."},
+{id:39,de:"arbeiten",pt:"trabalhar",type:"regular",note:"-e, -est, -et (raiz termina em -t)",ex:"Ich arbeite viel.",expt:"Eu trabalho muito."},
+{id:40,de:"verstehen",pt:"entender",type:"regular",note:"regular",ex:"Verstehst du mich?",expt:"Você me entende?"},
+{id:41,de:"beginnen",pt:"começar",type:"regular",note:"regular",ex:"Der Film beginnt jetzt.",expt:"O filme começa agora."},
+{id:42,de:"erzählen",pt:"contar (uma história)",type:"regular",note:"regular",ex:"Erzähl mir mehr.",expt:"Me conta mais."},
+{id:43,de:"versuchen",pt:"tentar",type:"regular",note:"regular",ex:"Ich versuche es.",expt:"Eu tento."},
+{id:44,de:"schreiben",pt:"escrever",type:"regular",note:"regular",ex:"Ich schreibe eine E-Mail.",expt:"Eu escrevo um e-mail."},
+{id:45,de:"laufen",pt:"correr / andar",type:"irregular",note:"du läufst, er läuft (au→äu)",ex:"Er läuft schnell.",expt:"Ele corre rápido."},
+{id:46,de:"verlieren",pt:"perder",type:"regular",note:"regular",ex:"Ich verliere mein Handy.",expt:"Eu perco meu celular."},
+{id:47,de:"schauen",pt:"olhar",type:"regular",note:"regular",ex:"Schau mal!",expt:"Olha só!"},
+{id:48,de:"stellen",pt:"colocar (em pé)",type:"regular",note:"regular",ex:"Stell das Glas hier.",expt:"Coloca o copo aqui."},
+{id:49,de:"legen",pt:"deitar / colocar (deitado)",type:"regular",note:"regular",ex:"Leg das Buch dort.",expt:"Coloca o livro ali."},
+{id:50,de:"bedeuten",pt:"significar",type:"regular",note:"-et, -est",ex:"Was bedeutet das?",expt:"O que isso significa?"},
+{id:51,de:"schlagen",pt:"bater",type:"irregular",note:"du schlägst, er schlägt (a→ä)",ex:"Mein Herz schlägt schnell.",expt:"Meu coração bate rápido."},
+{id:52,de:"bitten",pt:"pedir",type:"regular",note:"regular",ex:"Ich bitte um Hilfe.",expt:"Eu peço ajuda."},
+{id:53,de:"lesen",pt:"ler",type:"irregular",note:"du liest, er liest (e→ie)",ex:"Ich lese ein Buch.",expt:"Eu leio um livro."},
+{id:54,de:"bekommen",pt:"receber / conseguir",type:"regular",note:"regular",ex:"Ich bekomme ein Geschenk.",expt:"Eu recebo um presente."},
+{id:55,de:"essen",pt:"comer",type:"irregular",note:"du isst, er isst (e→i)",ex:"Was isst du gern?",expt:"O que você gosta de comer?"},
+{id:56,de:"trinken",pt:"beber",type:"regular",note:"regular",ex:"Ich trinke Wasser.",expt:"Eu bebo água."},
+{id:57,de:"helfen",pt:"ajudar",type:"irregular",note:"du hilfst, er hilft (e→i)",ex:"Kannst du mir helfen?",expt:"Você pode me ajudar?"},
+{id:58,de:"schlafen",pt:"dormir",type:"irregular",note:"du schläfst, er schläft (a→ä)",ex:"Ich schlafe gut.",expt:"Eu durmo bem."},
+{id:59,de:"hören",pt:"ouvir",type:"regular",note:"regular",ex:"Hörst du Musik?",expt:"Você está ouvindo música?"},
+{id:60,de:"kaufen",pt:"comprar",type:"regular",note:"regular",ex:"Ich kaufe Brot.",expt:"Eu compro pão."},
+{id:61,de:"verkaufen",pt:"vender",type:"regular",note:"regular",ex:"Er verkauft sein Auto.",expt:"Ele vende o carro dele."},
+{id:62,de:"lernen",pt:"aprender",type:"regular",note:"regular",ex:"Ich lerne Deutsch.",expt:"Eu aprendo alemão."},
+{id:63,de:"lieben",pt:"amar",type:"regular",note:"regular",ex:"Ich liebe dich.",expt:"Eu te amo."},
+{id:64,de:"suchen",pt:"procurar",type:"regular",note:"regular",ex:"Ich suche meinen Schlüssel.",expt:"Eu procuro minha chave."},
+{id:65,de:"treffen",pt:"encontrar-se (com alguém)",type:"irregular",note:"du triffst, er trifft (e→i)",ex:"Wir treffen uns um acht.",expt:"Nós nos encontramos às oito."},
+{id:66,de:"tragen",pt:"carregar / usar (roupa)",type:"irregular",note:"du trägst, er trägt (a→ä)",ex:"Sie trägt ein Kleid.",expt:"Ela usa um vestido."},
+{id:67,de:"fühlen",pt:"sentir",type:"regular",note:"regular",ex:"Ich fühle mich gut.",expt:"Eu me sinto bem."},
+{id:68,de:"erklären",pt:"explicar",type:"regular",note:"regular",ex:"Kannst du das erklären?",expt:"Você pode explicar isso?"},
+{id:69,de:"führen",pt:"liderar / conduzir",type:"regular",note:"regular",ex:"Er führt das Team.",expt:"Ele lidera a equipe."},
+{id:70,de:"setzen",pt:"sentar(-se) / colocar",type:"regular",note:"regular",ex:"Setz dich!",expt:"Senta!"},
+{id:71,de:"öffnen",pt:"abrir",type:"regular",note:"-e, -est, -et (raiz termina em -n)",ex:"Öffne die Tür.",expt:"Abre a porta."},
+{id:72,de:"schließen",pt:"fechar",type:"regular",note:"regular",ex:"Bitte schließ das Fenster.",expt:"Por favor, fecha a janela."},
+{id:73,de:"warten",pt:"esperar",type:"regular",note:"-e, -est, -et",ex:"Ich warte auf dich.",expt:"Eu espero por você."},
+{id:74,de:"antworten",pt:"responder",type:"regular",note:"-e, -est, -et",ex:"Antworte mir!",expt:"Me responde!"},
+{id:75,de:"planen",pt:"planejar",type:"regular",note:"regular",ex:"Wir planen eine Reise.",expt:"Nós planejamos uma viagem."},
+{id:76,de:"wünschen",pt:"desejar",type:"regular",note:"regular",ex:"Ich wünsche dir Glück.",expt:"Eu te desejo sorte."},
+{id:77,de:"entscheiden",pt:"decidir",type:"regular",note:"regular",ex:"Du musst dich entscheiden.",expt:"Você precisa decidir."},
+{id:78,de:"wohnen",pt:"morar",type:"regular",note:"regular",ex:"Ich wohne in São Paulo.",expt:"Eu moro em São Paulo."},
+{id:79,de:"reisen",pt:"viajar",type:"regular",note:"regular",ex:"Wir reisen gern.",expt:"Nós gostamos de viajar."},
+{id:80,de:"kochen",pt:"cozinhar",type:"regular",note:"regular",ex:"Ich koche Reis.",expt:"Eu cozinho arroz."},
+{id:81,de:"waschen",pt:"lavar",type:"irregular",note:"du wäschst, er wäscht (a→ä)",ex:"Ich wasche die Wäsche.",expt:"Eu lavo a roupa."},
+{id:82,de:"bezahlen",pt:"pagar",type:"regular",note:"regular",ex:"Ich bezahle die Rechnung.",expt:"Eu pago a conta."},
+{id:83,de:"verdienen",pt:"ganhar (dinheiro) / merecer",type:"regular",note:"regular",ex:"Er verdient viel Geld.",expt:"Ele ganha muito dinheiro."},
+{id:84,de:"schicken",pt:"enviar",type:"regular",note:"regular",ex:"Ich schicke dir das Foto.",expt:"Eu te envio a foto."},
+{id:85,de:"rufen",pt:"chamar / gritar",type:"regular",note:"regular",ex:"Er ruft meinen Namen.",expt:"Ele grita meu nome."},
+{id:86,de:"lachen",pt:"rir",type:"regular",note:"regular",ex:"Warum lachst du?",expt:"Por que você está rindo?"},
+{id:87,de:"spielen",pt:"jogar / brincar",type:"regular",note:"regular",ex:"Die Kinder spielen im Park.",expt:"As crianças brincam no parque."},
+{id:88,de:"aufstehen",pt:"levantar-se",type:"separable",note:"'auf' vai para o fim: ich stehe auf",ex:"Ich stehe um sieben Uhr auf.",expt:"Eu me levanto às sete horas."},
+{id:89,de:"anfangen",pt:"começar",type:"separable",note:"'an' no fim + irregular: du fängst an",ex:"Der Unterricht fängt um acht an.",expt:"A aula começa às oito."},
+{id:90,de:"aufmachen",pt:"abrir",type:"separable",note:"'auf' vai para o fim: ich mache auf",ex:"Mach die Tür auf!",expt:"Abre a porta!"},
+{id:91,de:"zumachen",pt:"fechar",type:"separable",note:"'zu' vai para o fim",ex:"Mach das Fenster zu!",expt:"Fecha a janela!"},
+{id:92,de:"einkaufen",pt:"fazer compras",type:"separable",note:"'ein' vai para o fim",ex:"Ich kaufe im Supermarkt ein.",expt:"Eu faço compras no supermercado."},
+{id:93,de:"fernsehen",pt:"assistir TV",type:"separable",note:"'fern' no fim + irregular: du siehst fern",ex:"Wir sehen abends fern.",expt:"Nós assistimos TV à noite."},
+{id:94,de:"anrufen",pt:"ligar / telefonar",type:"separable",note:"'an' vai para o fim",ex:"Ich rufe dich später an.",expt:"Eu te ligo mais tarde."},
+{id:95,de:"mitbringen",pt:"trazer (junto)",type:"separable",note:"'mit' vai para o fim",ex:"Bring bitte einen Kuchen mit.",expt:"Traz um bolo, por favor."},
+{id:96,de:"ankommen",pt:"chegar",type:"separable",note:"'an' vai para o fim",ex:"Der Zug kommt um zehn an.",expt:"O trem chega às dez."},
+{id:97,de:"aufräumen",pt:"arrumar",type:"separable",note:"'auf' vai para o fim",ex:"Ich räume mein Zimmer auf.",expt:"Eu arrumo meu quarto."},
+{id:98,de:"vorbereiten",pt:"preparar",type:"separable",note:"'vor' vai para o fim",ex:"Ich bereite das Essen vor.",expt:"Eu preparo a comida."},
+{id:99,de:"zurückkommen",pt:"voltar",type:"separable",note:"'zurück' vai para o fim",ex:"Ich komme bald zurück.",expt:"Eu volto logo."},
+{id:100,de:"teilnehmen",pt:"participar",type:"separable",note:"'teil' no fim + irregular: du nimmst teil",ex:"Ich nehme an dem Kurs teil.",expt:"Eu participo do curso."}
+];
+
+const TYPE_LABELS = {modal:"Modal", regular:"Regular", irregular:"Irregular", separable:"Separável"};
+const TYPE_ORDER = ["all","modal","regular","irregular","separable"];
+
+const STORAGE_KEY = "verben_werkstatt_v1";
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {mastered:{}, lastDate:null, streak:0};
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+let state = loadState();
+
+// streak logic: count a study day when user interacts
+function touchStreak(){
+  const today = new Date().toDateString();
+  if(state.lastDate === today) return;
+  const yesterday = new Date(Date.now()-86400000).toDateString();
+  if(state.lastDate === yesterday){ state.streak += 1; }
+  else if(state.lastDate === null){ state.streak = 1; }
+  else { state.streak = 1; }
+  state.lastDate = today;
+  saveState();
+}
+
+let currentCategory = "all";
+let mode = "flash"; // flash | quiz
+let deck = [];
+let deckIndex = 0;
+let quizPool = [];
+let quizIndex = 0;
+let quizAnswered = false;
+
+function getVerbsForCategory(cat){
+  return cat === "all" ? VERBS : VERBS.filter(v=>v.type===cat);
+}
+
+function buildTabs(){
+  const nav = document.getElementById("tabs");
+  nav.innerHTML = "";
+  TYPE_ORDER.forEach(cat=>{
+    const btn = document.createElement("button");
+    btn.className = "tab-btn" + (cat===currentCategory ? " active":"");
+    const count = getVerbsForCategory(cat).length;
+    btn.textContent = (cat==="all" ? "Todos" : TYPE_LABELS[cat]) + " (" + count + ")";
+    btn.onclick = ()=>{ currentCategory = cat; onCategoryChange(); };
+    nav.appendChild(btn);
+  });
+}
+
+function onCategoryChange(){
+  buildTabs();
+  if(mode==="flash") startFlashDeck();
+  else startQuiz();
+  updateStats();
+}
+
+function updateStats(){
+  const list = getVerbsForCategory(currentCategory);
+  const masteredCount = list.filter(v=>state.mastered[v.id]).length;
+  document.getElementById("stat-mastered").textContent = masteredCount + "/" + list.length;
+  document.getElementById("stat-streak").textContent = state.streak;
+  const pct = list.length ? Math.round(100*masteredCount/list.length) : 0;
+  document.getElementById("progress-fill").style.width = pct + "%";
+}
+
+/* ---------- FLASHCARDS ---------- */
+function startFlashDeck(){
+  deck = shuffle(getVerbsForCategory(currentCategory).filter(v=>!state.mastered[v.id]));
+  if(deck.length === 0) deck = shuffle(getVerbsForCategory(currentCategory)); // all mastered, review anyway
+  deckIndex = 0;
+  renderFlashCard();
+}
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function renderFlashCard(){
+  const card = document.getElementById("card");
+  if(deck.length === 0){
+    document.getElementById("flash-counter").textContent = "";
+    card.classList.remove("flipped");
+    document.getElementById("card-front").textContent = "🎉";
+    document.getElementById("card-tag").textContent = "";
+    return;
+  }
+  const v = deck[deckIndex];
+  card.classList.remove("flipped");
+  document.getElementById("flash-counter").textContent = (deckIndex+1) + " / " + deck.length;
+  document.getElementById("card-tag").textContent = TYPE_LABELS[v.type];
+  document.getElementById("card-front").textContent = v.de;
+  document.getElementById("card-pt").textContent = v.pt;
+  document.getElementById("card-note").textContent = v.note;
+  document.getElementById("card-example").innerHTML = "<b>" + v.ex + "</b><br>" + v.expt;
+}
+function nextFlash(known){
+  const v = deck[deckIndex];
+  if(v){
+    if(known){ state.mastered[v.id] = true; }
+    saveState();
+    touchStreak();
+  }
+  if(deckIndex < deck.length - 1){
+    deckIndex++;
+  } else {
+    deck = shuffle(getVerbsForCategory(currentCategory).filter(v=>!state.mastered[v.id]));
+    deckIndex = 0;
+  }
+  updateStats();
+  renderFlashCard();
+}
+
+/* ---------- QUIZ ---------- */
+function startQuiz(){
+  quizPool = shuffle(getVerbsForCategory(currentCategory));
+  quizIndex = 0;
+  renderQuiz();
+}
+function renderQuiz(){
+  quizAnswered = false;
+  document.getElementById("quiz-feedback").textContent = "";
+  document.getElementById("quiz-next").disabled = true;
+  if(quizPool.length === 0){
+    document.getElementById("quiz-word").textContent = "";
+    return;
+  }
+  if(quizIndex >= quizPool.length){
+    quizPool = shuffle(getVerbsForCategory(currentCategory));
+    quizIndex = 0;
+  }
+  const v = quizPool[quizIndex];
+  document.getElementById("quiz-word").textContent = v.de;
+
+  const pool = getVerbsForCategory(currentCategory).filter(x=>x.id!==v.id);
+  const distractors = shuffle(pool).slice(0,3).map(x=>x.pt);
+  const options = shuffle([v.pt, ...distractors]);
+
+  const optDiv = document.getElementById("quiz-options");
+  optDiv.innerHTML = "";
+  options.forEach(optPt=>{
+    const btn = document.createElement("button");
+    btn.className = "opt";
+    btn.textContent = optPt;
+    btn.onclick = ()=>{
+      if(quizAnswered) return;
+      quizAnswered = true;
+      touchStreak();
+      const buttons = optDiv.querySelectorAll(".opt");
+      buttons.forEach(b=>{
+        if(b.textContent === v.pt) b.classList.add("correct");
+      });
+      if(optPt === v.pt){
+        state.mastered[v.id] = true;
+        document.getElementById("quiz-feedback").textContent = "Isso mesmo! " + v.de + " = " + v.pt + " · " + v.ex;
+      } else {
+        btn.classList.add("wrong");
+        document.getElementById("quiz-feedback").textContent = "Quase! " + v.de + " significa \"" + v.pt + "\". Exemplo: " + v.ex;
+      }
+      saveState();
+      updateStats();
+      document.getElementById("quiz-next").disabled = false;
+    };
+    optDiv.appendChild(btn);
+  });
+}
+function nextQuiz(){
+  quizIndex++;
+  renderQuiz();
+}
+
+/* ---------- MODE SWITCH ---------- */
+function setMode(m){
+  mode = m;
+  document.getElementById("mode-flash-btn").classList.toggle("active", m==="flash");
+  document.getElementById("mode-quiz-btn").classList.toggle("active", m==="quiz");
+  document.getElementById("flash-panel").style.display = m==="flash" ? "flex":"none";
+  document.getElementById("quiz-panel").style.display = m==="quiz" ? "block":"none";
+  if(m==="flash") startFlashDeck(); else startQuiz();
+}
+
+/* ---------- EVENTS ---------- */
+document.getElementById("card").addEventListener("click", ()=>{
+  document.getElementById("card").classList.toggle("flipped");
+});
+document.getElementById("btn-known").addEventListener("click", (e)=>{ e.stopPropagation(); nextFlash(true); });
+document.getElementById("btn-review").addEventListener("click", (e)=>{ e.stopPropagation(); nextFlash(false); });
+document.getElementById("mode-flash-btn").addEventListener("click", ()=>setMode("flash"));
+document.getElementById("mode-quiz-btn").addEventListener("click", ()=>setMode("quiz"));
+document.getElementById("quiz-next").addEventListener("click", nextQuiz);
+document.getElementById("reset-btn").addEventListener("click", ()=>{
+  if(!confirm("Reiniciar o progresso desta categoria?")) return;
+  getVerbsForCategory(currentCategory).forEach(v=> delete state.mastered[v.id]);
+  saveState();
+  updateStats();
+  if(mode==="flash") startFlashDeck(); else startQuiz();
+});
+
+/* ---------- INIT ---------- */
+buildTabs();
+updateStats();
+startFlashDeck();
+</script>
+</body>
+</html>

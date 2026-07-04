@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verbos Separáveis & Casos — Treino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F4EC;
+    --paper-dim:#EEE9DB;
+    --ink:#1B2A4A;
+    --ink-soft:#3E4E6E;
+    --gold:#D9A441;
+    --gold-soft:#F0DBA8;
+    --green:#4C7A5E;
+    --green-soft:#DCEBE2;
+    --terracotta:#C1502E;
+    --terracotta-soft:#F5DDD4;
+    --line:#D8D0BC;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:820px;margin:0 auto;padding:28px 20px 80px;}
+
+  header{margin-bottom:20px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(28px,5vw,40px);
+    margin:0 0 8px;
+    line-height:1.05;
+  }
+  .sub{color:var(--ink-soft);font-size:15px;line-height:1.5;max-width:56ch;}
+
+  .tabs{
+    display:flex;gap:8px;margin:24px 0 20px;
+    border-bottom:1px solid var(--line);
+  }
+  .tab{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    letter-spacing:.04em;
+    background:none;border:none;cursor:pointer;
+    padding:10px 4px;margin-right:18px;
+    color:var(--ink-soft);
+    border-bottom:2px solid transparent;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .tab.active{color:var(--ink);border-color:var(--gold);}
+  .tab .n{
+    display:inline-block;background:var(--paper-dim);
+    border-radius:20px;padding:1px 7px;margin-left:6px;font-size:11px;
+  }
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:24px;
+    margin-bottom:18px;
+  }
+
+  .progress-row{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+  .progress-track{flex:1;height:6px;background:var(--paper-dim);border-radius:6px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--gold);border-radius:6px;transition:width .35s ease;}
+  .progress-label{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);white-space:nowrap;}
+  .streak{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green);white-space:nowrap;}
+
+  /* ---- Verb builder ---- */
+  .prompt-pt{
+    font-size:13px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;
+    letter-spacing:.02em;margin-bottom:4px;
+  }
+  .prompt-verb{
+    font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:18px;
+  }
+  .prompt-verb .infin{color:var(--gold);border-bottom:2px dotted var(--gold);}
+
+  .assembly{
+    display:flex;flex-wrap:wrap;gap:8px;
+    min-height:56px;
+    padding:12px;
+    background:var(--paper);
+    border:1.5px dashed var(--line);
+    border-radius:10px;
+    margin-bottom:16px;
+    align-items:center;
+  }
+  .assembly.endzone-hint::after{
+    content:"→ zona final: separável cai aqui";
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;color:var(--ink-soft);opacity:.6;margin-left:auto;
+  }
+  .assembly-empty{color:var(--ink-soft);font-size:13px;font-style:italic;opacity:.6;}
+
+  .word-pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+  .chip{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:14px;
+    padding:9px 14px;
+    border-radius:8px;
+    border:1.5px solid var(--ink);
+    background:#fff;
+    cursor:pointer;
+    user-select:none;
+    transition:transform .1s ease, background .15s ease;
+  }
+  .chip:hover{transform:translateY(-2px);}
+  .chip:active{transform:translateY(0);}
+  .chip.placed{opacity:0;pointer-events:none;}
+  .chip.verb-piece{border-color:var(--gold);background:var(--gold-soft);font-weight:600;}
+  .chip.prefix-piece{border-color:var(--green);background:var(--green-soft);font-weight:600;}
+  .chip.in-assembly{cursor:pointer;}
+  .chip.in-assembly.verb-piece{background:var(--gold-soft);}
+  .chip.in-assembly.prefix-piece{background:var(--green-soft);}
+
+  .row-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  button.primary{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:600;font-size:14px;
+    background:var(--ink);color:var(--paper);
+    border:none;border-radius:8px;
+    padding:11px 20px;cursor:pointer;
+  }
+  button.primary:disabled{opacity:.35;cursor:not-allowed;}
+  button.ghost{
+    font-family:'IBM Plex Sans',sans-serif;font-size:13px;
+    background:none;border:1px solid var(--line);border-radius:8px;
+    padding:10px 16px;cursor:pointer;color:var(--ink-soft);
+  }
+
+  .feedback{
+    margin-top:16px;padding:14px 16px;border-radius:10px;
+    font-size:14px;line-height:1.55;display:none;
+  }
+  .feedback.show{display:block;}
+  .feedback.ok{background:var(--green-soft);border:1px solid var(--green);}
+  .feedback.err{background:var(--terracotta-soft);border:1px solid var(--terracotta);}
+  .feedback b{font-family:'Fraunces',serif;}
+  .feedback .correct-answer{
+    font-family:'IBM Plex Mono',monospace;font-size:13px;margin-top:6px;
+    padding:8px 10px;background:rgba(255,255,255,.5);border-radius:6px;
+  }
+
+  /* ---- Cases quiz ---- */
+  .case-sentence{font-family:'Fraunces',serif;font-size:21px;line-height:1.5;margin-bottom:6px;}
+  .case-sentence .blank{
+    display:inline-block;min-width:52px;text-align:center;
+    border-bottom:2.5px solid var(--gold);color:var(--gold);font-weight:700;
+  }
+  .case-hint{font-size:13px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;margin-bottom:18px;}
+  .case-options{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:6px;}
+  .case-opt{
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;
+    padding:10px 20px;border-radius:8px;border:1.5px solid var(--ink);
+    background:#fff;cursor:pointer;
+  }
+  .case-opt.disabled{pointer-events:none;opacity:.4;}
+  .case-opt.picked-right{background:var(--green-soft);border-color:var(--green);}
+  .case-opt.picked-wrong{background:var(--terracotta-soft);border-color:var(--terracotta);}
+
+  .ref-table{margin-top:6px;}
+  .ref-table table{border-collapse:collapse;width:100%;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .ref-table th,.ref-table td{border:1px solid var(--line);padding:7px 10px;text-align:left;}
+  .ref-table th{background:var(--paper-dim);font-weight:600;}
+  .ref-toggle{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);
+    cursor:pointer;background:none;border:none;padding:0;margin-top:14px;text-decoration:underline;
+  }
+  .ref-wrap{display:none;margin-top:12px;}
+  .ref-wrap.show{display:block;}
+
+  .done-card{text-align:center;padding:40px 24px;}
+  .done-card .big{font-family:'Fraunces',serif;font-size:26px;margin-bottom:8px;}
+
+  footer{margin-top:8px;text-align:center;font-size:12px;color:var(--ink-soft);opacity:.6;}
+
+  @media (max-width:480px){
+    .card{padding:18px;}
+    .prompt-verb{font-size:19px;}
+    .case-sentence{font-size:18px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="eyebrow">Deutsch Training — Modul 03</div>
+    <h1>Verbos separáveis & casos</h1>
+    <p class="sub">Duas mecânicas de produção ativa: montar a frase (não só reconhecer) e escolher o artigo certo. Erros voltam pro final da fila até você acertar de primeira.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="verbs">Verbos separáveis <span class="n" id="tab-n-verbs">0/0</span></button>
+    <button class="tab" data-tab="cases">Casos (Akkusativ/Dativ) <span class="n" id="tab-n-cases">0/0</span></button>
+  </div>
+
+  <!-- VERBS PANEL -->
+  <div class="panel active" id="panel-verbs">
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="verb-progress"></div></div>
+      <div class="progress-label" id="verb-progress-label">0/0</div>
+      <div class="streak" id="verb-streak">🔥 0</div>
+    </div>
+
+    <div class="card">
+      <div class="prompt-pt" id="verb-pt"></div>
+      <div class="prompt-verb" id="verb-infin"></div>
+
+      <div class="assembly" id="verb-assembly">
+        <span class="assembly-empty">clique nas peças abaixo, na ordem</span>
+      </div>
+
+      <div class="word-pool" id="verb-pool"></div>
+
+      <div class="row-actions">
+        <button class="primary" id="verb-check" disabled>Conferir</button>
+        <button class="ghost" id="verb-clear">Limpar</button>
+        <button class="ghost" id="verb-skip" style="display:none;" id="verb-next">Próxima frase →</button>
+      </div>
+
+      <div class="feedback" id="verb-feedback"></div>
+    </div>
+
+    <button class="ref-toggle" id="verb-ref-toggle">mostrar regra de posição ↓</button>
+    <div class="ref-wrap" id="verb-ref-wrap">
+      <div class="card" style="padding:16px 20px;">
+        <p style="margin:0 0 8px;font-size:13px;line-height:1.6;">
+          <b>Ordem fixa:</b> Sujeito → verbo conjugado (posição 2) → resto da frase → prefixo separável (fim).<br>
+          No <b>Perfekt</b> e em orações com <b>weil/dass/wenn</b>, o verbo NÃO se separa — ele vai inteiro pro final (Perfekt: prefixo gruda no particípio: <i>aufgestanden</i>; Nebensatz: <i>...weil ich aufstehe</i>).
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASES PANEL -->
+  <div class="panel" id="panel-cases">
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="case-progress"></div></div>
+      <div class="progress-label" id="case-progress-label">0/0</div>
+      <div class="streak" id="case-streak">🔥 0</div>
+    </div>
+
+    <div class="card">
+      <div class="case-sentence" id="case-sentence"></div>
+      <div class="case-hint" id="case-hint"></div>
+      <div class="case-options" id="case-options"></div>
+      <div class="feedback" id="case-feedback"></div>
+    </div>
+
+    <button class="ref-toggle" id="case-ref-toggle">mostrar tabela de artigos ↓</button>
+    <div class="ref-wrap" id="case-ref-wrap">
+      <div class="card ref-table" style="padding:16px 20px;">
+        <table>
+          <tr><th></th><th>masc.</th><th>fem.</th><th>neutro</th><th>plural</th></tr>
+          <tr><td><b>Nom.</b></td><td>der</td><td>die</td><td>das</td><td>die</td></tr>
+          <tr><td><b>Akk.</b></td><td>den</td><td>die</td><td>das</td><td>die</td></tr>
+          <tr><td><b>Dat.</b></td><td>dem</td><td>der</td><td>dem</td><td>den</td></tr>
+        </table>
+        <p style="font-size:12px;color:var(--ink-soft);margin:12px 0 0;">
+          Akkusativ fixo: brauchen, haben, sehen, kaufen, für, ohne, durch · Dativ fixo: helfen, danken, gefallen, mit, nach, bei, von, zu
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <footer>feito pra você travar menos e produzir mais 🌱</footer>
+</div>
+
+<script>
+/* ============ DATA ============ */
+const verbExercises = [
+  {infin:"anrufen", pt:"Eu ligo pra minha mãe.", chunks:["Ich","rufe","meine Mutter"], prefix:"an", verbPiece:"rufe"},
+  {infin:"aufstehen", pt:"Você levanta às 7h?", chunks:["Stehst","du","um 7 Uhr"], prefix:"auf", verbPiece:"Stehst"},
+  {infin:"einkaufen", pt:"Nós compramos no sábado.", chunks:["Wir","kaufen","am Samstag"], prefix:"ein", verbPiece:"kaufen"},
+  {infin:"fernsehen", pt:"Ele assiste TV todo dia.", chunks:["Er","sieht","jeden Tag"], prefix:"fern", verbPiece:"sieht"},
+  {infin:"mitkommen", pt:"Você vem junto amanhã?", chunks:["Kommst","du","morgen"], prefix:"mit", verbPiece:"Kommst"},
+  {infin:"abholen", pt:"Eu busco você às 8h.", chunks:["Ich","hole","dich um 8 Uhr"], prefix:"ab", verbPiece:"hole"},
+  {infin:"aufmachen", pt:"Abre a janela, por favor.", chunks:["Mach","das Fenster","bitte"], prefix:"auf", verbPiece:"Mach"},
+  {infin:"zumachen", pt:"Ela fecha a porta.", chunks:["Sie","macht","die Tür"], prefix:"zu", verbPiece:"macht"},
+  {infin:"vorschlagen", pt:"Eu proponho um restaurante.", chunks:["Ich","schlage","ein Restaurant"], prefix:"vor", verbPiece:"schlage"},
+  {infin:"anfangen", pt:"A reunião começa às 9h.", chunks:["Das Meeting","fängt","um 9 Uhr"], prefix:"an", verbPiece:"fängt"},
+  {infin:"aufhören", pt:"Nós paramos às 17h.", chunks:["Wir","hören","um 17 Uhr"], prefix:"auf", verbPiece:"hören"},
+  {infin:"umziehen", pt:"Nós nos mudamos em julho.", chunks:["Wir","ziehen","im Juli"], prefix:"um", verbPiece:"ziehen"},
+  {infin:"ankommen", pt:"O trem chega às 10h.", chunks:["Der Zug","kommt","um 10 Uhr"], prefix:"an", verbPiece:"kommt"},
+  {infin:"vorbereiten", pt:"Eu preparo a apresentação.", chunks:["Ich","bereite","die Präsentation"], prefix:"vor", verbPiece:"bereite"},
+  {infin:"teilnehmen", pt:"Você participa da reunião?", chunks:["Nimmst","du","am Meeting"], prefix:"teil", verbPiece:"Nimmst"},
+];
+
+const caseExercises = [
+  {before:"Ich brauche", after:"Kaffee.", art:"masc", correct:"den", options:["der","den","dem"], rule:"brauchen → sempre Akkusativ. Kaffee = masculino (der Kaffee) → den."},
+  {before:"Ich helfe", after:"Mann.", art:"masc", correct:"dem", options:["den","dem","der"], rule:"helfen → sempre Dativ. Mann = masculino → dem."},
+  {before:"Wir kaufen", after:"Tisch.", art:"masc", correct:"den", options:["der","den","dem"], rule:"kaufen → Akkusativ. Tisch = masculino → den."},
+  {before:"Sie dankt", after:"Frau.", art:"fem", correct:"der", options:["die","den","der"], rule:"danken → Dativ. Frau = feminino → der (dativo fem.)."},
+  {before:"Das ist für", after:"Kind.", art:"neut", correct:"das", options:["das","dem","den"], rule:"für → sempre Akkusativ. Kind = neutro → das (igual ao nominativo)."},
+  {before:"Ich fahre mit", after:"Bus.", art:"masc", correct:"dem", options:["den","der","dem"], rule:"mit → sempre Dativ. Bus = masculino → dem."},
+  {before:"Er sieht", after:"Hund.", art:"masc", correct:"den", options:["der","den","dem"], rule:"sehen → Akkusativ. Hund = masculino → den."},
+  {before:"Das gefällt", after:"Chefin.", art:"fem", correct:"der", options:["die","der","den"], rule:"gefallen → Dativ. Chefin = feminino → der."},
+  {before:"Ich gehe ohne", after:"Jacke.", art:"fem", correct:"die", options:["die","der","den"], rule:"ohne → sempre Akkusativ. Jacke = feminino, Akk. fem. não muda → die."},
+  {before:"Wir sprechen von", after:"Projekt.", art:"neut", correct:"dem", options:["das","der","dem"], rule:"von → sempre Dativ. Projekt = neutro → dem (dativo neutro)."},
+  {before:"Ich habe", after:"Termin.", art:"masc", correct:"den", options:["der","den","dem"], rule:"haben → Akkusativ. Termin = masculino → den."},
+  {before:"Nach", after:"Arbeit gehen wir essen.", art:"fem", correct:"der", options:["die","der","den"], rule:"nach → sempre Dativ. Arbeit = feminino → der."},
+  {before:"Ich rufe", after:"Kollegen an.", art:"masc", correct:"den", options:["der","den","dem"], rule:"anrufen (verbo separável) → objeto direto = Akkusativ. Kollege = masculino → den."},
+  {before:"Er dankt", after:"Team für die Hilfe.", art:"neut", correct:"dem", options:["das","dem","der"], rule:"danken → Dativ. Team = neutro → dem."},
+  {before:"Wir kommen bei", after:"Besprechung an.", art:"fem", correct:"der", options:["die","der","den"], rule:"bei → sempre Dativ. Besprechung = feminino → der."},
+  {before:"Sie kauft", after:"Blumen.", art:"plur", correct:"die", options:["die","den","der"], rule:"kaufen → Akkusativ. Plural Akkusativo = die."},
+  {before:"Ich gebe es", after:"Kunden.", art:"plur", correct:"den", options:["die","den","der"], rule:"geben (objeto indireto) → Dativ. Plural Dativo = den."},
+];
+
+/* ============ STATE ============ */
+let verbQueue = [], verbTotal = 0, verbDone = 0, verbStreak = 0;
+let verbPlaced = [], verbPoolState = [];
+let currentVerb = null;
+
+let caseQueue = [], caseTotal = 0, caseDone = 0, caseStreak = 0;
+let currentCase = null;
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+/* ============ TABS ============ */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-'+t.dataset.tab).classList.add('active');
+  });
+});
+
+document.getElementById('verb-ref-toggle').addEventListener('click',()=>{
+  const w = document.getElementById('verb-ref-wrap');
+  w.classList.toggle('show');
+  document.getElementById('verb-ref-toggle').textContent = w.classList.contains('show') ? 'esconder regra ↑' : 'mostrar regra de posição ↓';
+});
+document.getElementById('case-ref-toggle').addEventListener('click',()=>{
+  const w = document.getElementById('case-ref-wrap');
+  w.classList.toggle('show');
+  document.getElementById('case-ref-toggle').textContent = w.classList.contains('show') ? 'esconder tabela ↑' : 'mostrar tabela de artigos ↓';
+});
+
+/* ============ VERB MODULE ============ */
+function initVerbs(){
+  verbQueue = shuffle(verbExercises);
+  verbTotal = verbQueue.length;
+  verbDone = 0;
+  verbStreak = 0;
+  updateVerbProgress();
+  nextVerbExercise();
+}
+
+function updateVerbProgress(){
+  document.getElementById('verb-progress').style.width = (verbTotal? (verbDone/verbTotal*100):0)+'%';
+  document.getElementById('verb-progress-label').textContent = verbDone+'/'+verbTotal;
+  document.getElementById('verb-streak').textContent = '🔥 '+verbStreak;
+  document.getElementById('tab-n-verbs').textContent = verbDone+'/'+verbTotal;
+}
+
+function nextVerbExercise(){
+  document.getElementById('verb-feedback').className='feedback';
+  document.getElementById('verb-check').disabled = true;
+
+  if(verbQueue.length===0){
+    renderVerbDone();
+    return;
+  }
+  currentVerb = verbQueue.shift();
+  verbPlaced = [];
+
+  const allPieces = [...currentVerb.chunks];
+  verbPoolState = shuffle(allPieces).map(text=>({
+    text,
+    isVerb: text===currentVerb.verbPiece,
+    isPrefix: false,
+    placed:false
+  }));
+  verbPoolState.push({text:currentVerb.prefix, isVerb:false, isPrefix:true, placed:false});
+  verbPoolState = shuffle(verbPoolState);
+
+  document.getElementById('verb-pt').textContent = 'PT → ' + currentVerb.pt;
+  document.getElementById('verb-infin').innerHTML = 'Verbo: <span class="infin">'+currentVerb.infin+'</span>';
+  renderVerbAssembly();
+  renderVerbPool();
+}
+
+function renderVerbPool(){
+  const pool = document.getElementById('verb-pool');
+  pool.innerHTML = '';
+  verbPoolState.forEach((p, idx)=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip'+(p.isVerb?' verb-piece':'')+(p.isPrefix?' prefix-piece':'')+(p.placed?' placed':'');
+    chip.textContent = p.text;
+    chip.addEventListener('click',()=>{
+      if(p.placed) return;
+      p.placed = true;
+      verbPlaced.push(p);
+      renderVerbPool();
+      renderVerbAssembly();
+    });
+    pool.appendChild(chip);
+  });
+}
+
+function renderVerbAssembly(){
+  const box = document.getElementById('verb-assembly');
+  box.innerHTML = '';
+  if(verbPlaced.length===0){
+    box.innerHTML = '<span class="assembly-empty">clique nas peças abaixo, na ordem</span>';
+  } else {
+    verbPlaced.forEach((p)=>{
+      const chip = document.createElement('div');
+      chip.className = 'chip in-assembly'+(p.isVerb?' verb-piece':'')+(p.isPrefix?' prefix-piece':'');
+      chip.textContent = p.text;
+      chip.title = 'clique para remover';
+      chip.addEventListener('click',()=>{
+        p.placed = false;
+        verbPlaced = verbPlaced.filter(x=>x!==p);
+        renderVerbPool();
+        renderVerbAssembly();
+      });
+      box.appendChild(chip);
+    });
+  }
+  document.getElementById('verb-check').disabled = verbPlaced.length !== verbPoolState.length;
+}
+
+document.getElementById('verb-clear').addEventListener('click',()=>{
+  verbPoolState.forEach(p=>p.placed=false);
+  verbPlaced = [];
+  renderVerbPool();
+  renderVerbAssembly();
+});
+
+document.getElementById('verb-check').addEventListener('click',()=>{
+  const built = verbPlaced.map(p=>p.text).join(' ');
+  const correctOrder = currentVerb.noRest
+    ? [currentVerb.verbPiece, ...currentVerb.chunks.filter(c=>c!==currentVerb.verbPiece)]
+    : [currentVerb.chunks[0], currentVerb.verbPiece, ...currentVerb.chunks.slice(1).filter(c=>c!==currentVerb.verbPiece), currentVerb.prefix];
+  // build correct sentence generically: subject, verb, ...rest(minus verb), prefix
+  const rest = currentVerb.chunks.filter((c,i)=> i!==0 && c!==currentVerb.verbPiece);
+  const correctSentence = [currentVerb.chunks[0], currentVerb.verbPiece, ...rest, currentVerb.prefix].join(' ') + '.';
+  const isCorrect = built + '.' === correctSentence;
+
+  const fb = document.getElementById('verb-feedback');
+  if(isCorrect){
+    verbStreak++;
+    verbDone++;
+    fb.className = 'feedback show ok';
+    fb.innerHTML = '<b>Genau!</b> Perfeito — verbo na posição 2, prefixo "'+currentVerb.prefix+'" lá no final. ✅';
+    updateVerbProgress();
+    document.getElementById('verb-check').disabled = true;
+    document.querySelectorAll('#verb-pool .chip, #verb-assembly .chip').forEach(c=>c.style.pointerEvents='none');
+    setTimeout(nextVerbExercise, 1400);
+  } else {
+    verbStreak = 0;
+    verbQueue.push(currentVerb); // requeue at the end
+    fb.className = 'feedback show err';
+    fb.innerHTML = 'Isso soa bem, mas ainda não é natural — só um pequeno detalhe na ordem. Lembre: sujeito → verbo (posição 2) → resto → prefixo no final.'+
+      '<div class="correct-answer">'+correctSentence+'</div>';
+    updateVerbProgress();
+    document.getElementById('verb-check').disabled = true;
+    document.querySelectorAll('#verb-pool .chip, #verb-assembly .chip').forEach(c=>c.style.pointerEvents='none');
+    setTimeout(nextVerbExercise, 2600);
+  }
+});
+
+function renderVerbDone(){
+  document.getElementById('panel-verbs').querySelector('.card').outerHTML =
+    '<div class="card done-card"><div class="big">🎉 Você fechou os '+verbTotal+' verbos!</div>'+
+    '<p style="color:var(--ink-soft);font-size:14px;">Sequência final sem erro: '+verbStreak+'. Quer rodar de novo pra fixar?</p>'+
+    '<button class="primary" id="verb-restart">Treinar de novo</button></div>';
+  document.getElementById('verb-restart').addEventListener('click', ()=>{
+    location.reload();
+  });
+}
+
+/* ============ CASES MODULE ============ */
+function initCases(){
+  caseQueue = shuffle(caseExercises);
+  caseTotal = caseQueue.length;
+  caseDone = 0;
+  caseStreak = 0;
+  updateCaseProgress();
+  nextCaseExercise();
+}
+
+function updateCaseProgress(){
+  document.getElementById('case-progress').style.width = (caseTotal? (caseDone/caseTotal*100):0)+'%';
+  document.getElementById('case-progress-label').textContent = caseDone+'/'+caseTotal;
+  document.getElementById('case-streak').textContent = '🔥 '+caseStreak;
+  document.getElementById('tab-n-cases').textContent = caseDone+'/'+caseTotal;
+}
+
+function nextCaseExercise(){
+  document.getElementById('case-feedback').className='feedback';
+  if(caseQueue.length===0){
+    renderCaseDone();
+    return;
+  }
+  currentCase = caseQueue.shift();
+  document.getElementById('case-sentence').innerHTML =
+    currentCase.before + ' <span class="blank">___</span> ' + currentCase.after;
+  document.getElementById('case-hint').textContent = 'escolha o artigo certo';
+
+  const opts = document.getElementById('case-options');
+  opts.innerHTML = '';
+  shuffle(currentCase.options).forEach(opt=>{
+    const btn = document.createElement('button');
+    btn.className = 'case-opt';
+    btn.textContent = opt;
+    btn.addEventListener('click',()=>handleCaseAnswer(opt, btn));
+    opts.appendChild(btn);
+  });
+}
+
+function handleCaseAnswer(chosen, btnEl){
+  document.querySelectorAll('.case-opt').forEach(b=>b.classList.add('disabled'));
+  const fb = document.getElementById('case-feedback');
+  const correct = chosen === currentCase.correct;
+
+  if(correct){
+    btnEl.classList.add('picked-right');
+    caseStreak++;
+    caseDone++;
+    fb.className = 'feedback show ok';
+    fb.innerHTML = '<b>Isso mesmo!</b> '+currentCase.rule;
+    updateCaseProgress();
+    setTimeout(nextCaseExercise, 1500);
+  } else {
+    btnEl.classList.add('picked-wrong');
+    document.querySelectorAll('.case-opt').forEach(b=>{
+      if(b.textContent===currentCase.correct) b.classList.add('picked-right');
+    });
+    caseStreak = 0;
+    caseQueue.push(currentCase); // requeue at the end
+    fb.className = 'feedback show err';
+    fb.innerHTML = 'Quase — vamos revisar: '+currentCase.rule;
+    updateCaseProgress();
+    setTimeout(nextCaseExercise, 2600);
+  }
+}
+
+function renderCaseDone(){
+  document.getElementById('panel-cases').querySelector('.card').outerHTML =
+    '<div class="card done-card"><div class="big">🎉 Todos os '+caseTotal+' casos resolvidos!</div>'+
+    '<p style="color:var(--ink-soft);font-size:14px;">Sequência final sem erro: '+caseStreak+'. Bora repetir pra automatizar?</p>'+
+    '<button class="primary" id="case-restart">Treinar de novo</button></div>';
+  document.getElementById('case-restart').addEventListener('click', ()=>{
+    location.reload();
+  });
+}
+
+/* ============ INIT ============ */
+initVerbs();
+initCases();
+</script>
+</body>
+</html>
