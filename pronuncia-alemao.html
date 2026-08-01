@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Klang — Guia de Pronúncia Alemã</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#141821;
+    --ink-soft:#1d2230;
+    --paper:#f3efe6;
+    --paper-dim:#c9c3b4;
+    --amber:#e2a33e;
+    --amber-soft:#f2c876;
+    --der:#5b8fd4;
+    --die:#d9636a;
+    --das:#63b37a;
+    --line: rgba(243,239,230,0.14);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(226,163,62,0.14), transparent 45%),
+      radial-gradient(ellipse at 90% 10%, rgba(91,143,212,0.10), transparent 40%),
+      var(--ink);
+    color:var(--paper);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+    padding:0 0 80px;
+  }
+  header{
+    padding:56px 24px 28px;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+    position:relative;
+    overflow:hidden;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--amber-soft);
+    margin-bottom:14px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:clamp(34px, 6vw, 58px);
+    margin:0 0 10px;
+    letter-spacing:-0.01em;
+  }
+  h1 em{
+    font-style:italic;
+    font-weight:400;
+    color:var(--amber-soft);
+  }
+  .subtitle{
+    color:var(--paper-dim);
+    font-size:15px;
+    max-width:520px;
+    margin:0 auto;
+    line-height:1.55;
+  }
+
+  .wrap{
+    max-width:720px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+
+  .search-box{
+    margin-top:-26px;
+    background:var(--ink-soft);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:22px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,0.55);
+  }
+  .search-row{
+    display:flex;
+    gap:10px;
+  }
+  #wordInput{
+    flex:1;
+    background:rgba(243,239,230,0.05);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:15px 18px;
+    font-family:'Fraunces', serif;
+    font-size:22px;
+    color:var(--paper);
+    outline:none;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  #wordInput::placeholder{color:rgba(243,239,230,0.32); font-style:italic;}
+  #wordInput:focus{border-color:var(--amber); background:rgba(226,163,62,0.06);}
+  #searchBtn{
+    background:var(--amber);
+    color:var(--ink);
+    border:none;
+    border-radius:12px;
+    padding:0 22px;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    transition:transform .12s ease, background .12s ease;
+  }
+  #searchBtn:hover{background:var(--amber-soft); transform:translateY(-1px);}
+  #searchBtn:active{transform:translateY(0);}
+
+  .suggestions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:14px;
+  }
+  .chip{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:20px;
+    color:var(--paper-dim);
+    cursor:pointer;
+    background:transparent;
+    transition:all .12s ease;
+  }
+  .chip:hover{border-color:var(--amber-soft); color:var(--amber-soft);}
+
+  .legend{
+    margin-top:14px;
+    background:rgba(243,239,230,0.03);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 18px;
+  }
+  .legend summary{
+    cursor:pointer;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--paper-dim);
+    letter-spacing:0.02em;
+  }
+  .legend summary:hover{color:var(--amber-soft);}
+  .legend-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px 20px;
+    margin-top:14px;
+    font-size:13px;
+    color:var(--paper-dim);
+    line-height:1.5;
+  }
+  .legend-grid b, .legend-grid strong{color:var(--paper);}
+  @media (max-width:520px){
+    .legend-grid{grid-template-columns:1fr;}
+  }
+
+  /* RESULT CARD */
+  #result{margin-top:26px;}
+  .empty-state{
+    margin-top:40px;
+    text-align:center;
+    color:var(--paper-dim);
+    font-size:14px;
+    line-height:1.7;
+  }
+  .empty-state svg{opacity:0.5; margin-bottom:14px;}
+
+  .card{
+    background:var(--ink-soft);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:30px;
+    animation:rise .35s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes rise{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+  .card-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .badge{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    padding:4px 10px;
+    border-radius:20px;
+    font-weight:600;
+    display:inline-block;
+  }
+  .badge.der{background:rgba(91,143,212,0.16); color:var(--der);}
+  .badge.die{background:rgba(217,99,106,0.16); color:var(--die);}
+  .badge.das{background:rgba(99,179,122,0.16); color:var(--das);}
+  .badge.type{background:rgba(243,239,230,0.08); color:var(--paper-dim); margin-left:6px;}
+
+  .headword{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:44px;
+    margin:10px 0 4px;
+    line-height:1.1;
+  }
+  .headword .article{color:var(--amber-soft); font-style:italic; font-weight:400; margin-right:10px;}
+
+  .meaning{
+    font-size:18px;
+    color:var(--paper);
+    margin-bottom:22px;
+  }
+
+  .play-btn{
+    background:var(--amber);
+    border:none;
+    width:56px; height:56px;
+    border-radius:50%;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+    transition:transform .12s ease, background .12s ease;
+  }
+  .play-btn:hover{transform:scale(1.06); background:var(--amber-soft);}
+  .play-btn:active{transform:scale(0.97);}
+  .play-btn svg{fill:var(--ink);}
+  .play-btn.slow{background:transparent; border:1px solid var(--line); width:auto; height:auto; border-radius:20px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--paper-dim); gap:6px; display:inline-flex; align-items:center;}
+  .play-btn.slow:hover{border-color:var(--amber-soft); color:var(--amber-soft); background:transparent;}
+  .play-row{display:flex; align-items:center; gap:10px; margin-bottom:24px;}
+
+  .section-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--amber-soft);
+    margin-bottom:8px;
+    margin-top:22px;
+  }
+  .phonetic-box{
+    background:rgba(226,163,62,0.07);
+    border:1px dashed rgba(226,163,62,0.35);
+    border-radius:12px;
+    padding:16px 18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:20px;
+    letter-spacing:0.02em;
+    color:var(--amber-soft);
+  }
+  .phonetic-hint{font-size:12px; color:var(--paper-dim); margin-top:6px; font-family:'Space Grotesk',sans-serif;}
+
+  .example{
+    background:rgba(243,239,230,0.04);
+    border-radius:12px;
+    padding:14px 18px;
+    margin-top:8px;
+  }
+  .example .de{font-size:16px; margin-bottom:4px;}
+  .example .pt{font-size:14px; color:var(--paper-dim); font-style:italic;}
+
+  .tips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:8px;
+  }
+  .tip-pill{
+    font-size:12px;
+    background:rgba(217,99,106,0.10);
+    color:#e79196;
+    padding:6px 12px;
+    border-radius:20px;
+    border:1px solid rgba(217,99,106,0.25);
+  }
+
+  .not-found{
+    font-size:13px;
+    color:var(--paper-dim);
+    margin-top:18px;
+    line-height:1.6;
+    border-top:1px solid var(--line);
+    padding-top:16px;
+  }
+
+  /* HISTORY */
+  .history{
+    margin-top:28px;
+  }
+  .history-title{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--paper-dim);
+    margin-bottom:10px;
+  }
+  .history-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .hist-chip{
+    font-family:'Fraunces', serif;
+    font-size:14px;
+    padding:6px 14px;
+    border-radius:20px;
+    background:var(--ink-soft);
+    border:1px solid var(--line);
+    cursor:pointer;
+    color:var(--paper);
+  }
+  .hist-chip:hover{border-color:var(--amber-soft);}
+
+  footer{
+    text-align:center;
+    margin-top:50px;
+    font-size:12px;
+    color:rgba(243,239,230,0.3);
+    font-family:'JetBrains Mono', monospace;
+  }
+
+  ::selection{background:var(--amber); color:var(--ink);}
+
+  @media (max-width:480px){
+    .headword{font-size:34px;}
+    .card{padding:22px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">für Christian &amp; sua esposa</div>
+  <h1>Klang <em>— guia de pronúncia</em></h1>
+  <p class="subtitle">Digite qualquer palavra em alemão. Vocês recebem o significado, o artigo (quando houver) e a melhor forma de pronunciar — escrito do jeito que soa em português, mais o áudio real.</p>
+</header>
+
+<div class="wrap">
+  <div class="search-box">
+    <div class="search-row">
+      <input id="wordInput" type="text" placeholder="ex: Kühlschrank, sprechen, schön..." autocomplete="off" spellcheck="false">
+      <button id="searchBtn">Buscar</button>
+    </div>
+    <div class="suggestions" id="suggestions"></div>
+  </div>
+
+  <details class="legend">
+    <summary>Como ler os sons especiais (abrir uma vez e já era)</summary>
+    <div class="legend-grid">
+      <div><b>ch</b> depois de a/o/u → <b>rr</b> raspado no fundo da garganta</div>
+      <div><b>ch</b> nos outros casos → <b>rr</b> bem fraco, quase um "h" chiado</div>
+      <div><b>sch</b> → <b>ch</b> de "chuva"</div>
+      <div><b>z</b> → <b>ts</b></div>
+      <div><b>w</b> → <b>v</b></div>
+      <div><b>v</b> → <b>f</b></div>
+      <div><b>ei</b> → <b>ai</b></div>
+      <div><b>eu / äu</b> → <b>oi</b></div>
+      <div><b>ü</b> → diga "u" com os lábios em bico</div>
+      <div><b>ö</b> → diga "ê" com os lábios em bico</div>
+      <div><b>ä</b> → <b>é</b></div>
+      <div><b>-er</b> no final → som fraco de <b>a</b></div>
+      <div>A sílaba em <strong>MAIÚSCULA</strong> é a mais forte (tônica)</div>
+    </div>
+  </details>
+
+  <div id="result">
+    <div class="empty-state" id="emptyState">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M12 3C7 3 3 6.5 3 11c0 2.4 1.2 4.6 3.2 6.1-.1.9-.5 2.1-1.4 3.2 1.6-.2 3-.9 4-1.6.7.2 1.4.3 2.2.3 5 0 9-3.5 9-8s-4-8-9-8z" stroke="#c9c3b4" stroke-width="1.3"/></svg>
+      <div>Comece digitando uma palavra alemã acima.</div>
+    </div>
+  </div>
+
+  <div class="history" id="historyWrap" style="display:none;">
+    <div class="history-title">Buscadas nesta sessão</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+</div>
+
+<footer>feito para praticar o Hörverständnis, uma palavra de cada vez</footer>
+
+<script>
+/* ---------------------------------------------------------
+   DICIONÁRIO CURADO — significado + dicas manuais quando o
+   algoritmo genérico não é suficiente (ex: irregularidades)
+--------------------------------------------------------- */
+const DICT = [
+  // saudações e social
+  ["Hallo","","interjeição","olá","Hallo, wie geht's?","Olá, como vai?"],
+  ["Tschüss","","interjeição","tchau (informal)","Tschüss, bis morgen!","Tchau, até amanhã!"],
+  ["Danke","","interjeição","obrigado(a)","Danke schön!","Muito obrigado!"],
+  ["Bitte","","interjeição","por favor / de nada","Bitte sehr.","Por favor / De nada."],
+  ["Entschuldigung","die","substantivo","desculpa / com licença","Entschuldigung, wo ist der Bahnhof?","Com licença, onde fica a estação?"],
+  ["Freund","der","substantivo","amigo","Er ist mein bester Freund.","Ele é meu melhor amigo."],
+  ["Freundin","die","substantivo","amiga / namorada","Meine Freundin kommt heute.","Minha amiga/namorada vem hoje."],
+  ["Familie","die","substantivo","família","Ich liebe meine Familie.","Eu amo minha família."],
+
+  // pronomes
+  ["ich","","pronome","eu","Ich bin müde.","Eu estou cansado."],
+  ["du","","pronome","tu / você (informal)","Wie heißt du?","Qual é o seu nome?"],
+  ["er","","pronome","ele","Er wohnt in Berlin.","Ele mora em Berlim."],
+  ["sie","","pronome","ela / eles/elas","Sie ist nett.","Ela é gentil."],
+  ["wir","","pronome","nós","Wir gehen ins Kino.","Nós vamos ao cinema."],
+  ["ihr","","pronome","vós / vocês","Ihr seid willkommen.","Vocês são bem-vindos."],
+
+  // verbos essenciais
+  ["sein","","verbo","ser / estar","Ich bin glücklich.","Eu estou feliz."],
+  ["haben","","verbo","ter","Wir haben Zeit.","Nós temos tempo."],
+  ["gehen","","verbo","ir / andar","Wohin gehst du?","Para onde você vai?"],
+  ["kommen","","verbo","vir","Kommst du mit?","Você vem junto?"],
+  ["machen","","verbo","fazer","Was machst du heute?","O que você vai fazer hoje?"],
+  ["sprechen","","verbo","falar","Sprichst du Deutsch?","Você fala alemão?"],
+  ["verstehen","","verbo","entender","Ich verstehe das nicht.","Eu não entendo isso."],
+  ["essen","","verbo","comer","Wir essen zusammen.","Nós comemos juntos."],
+  ["trinken","","verbo","beber","Ich trinke gern Kaffee.","Eu gosto de beber café."],
+  ["wohnen","","verbo","morar","Wo wohnst du?","Onde você mora?"],
+  ["arbeiten","","verbo","trabalhar","Ich arbeite viel.","Eu trabalho muito."],
+  ["lernen","","verbo","aprender","Wir lernen Deutsch.","Nós estamos aprendendo alemão."],
+  ["spielen","","verbo","jogar / brincar","Er spielt Fußball.","Ele joga futebol."],
+  ["lieben","","verbo","amar","Ich liebe dich.","Eu te amo."],
+  ["mögen","","verbo","gostar","Ich mag dieses Lied.","Eu gosto dessa música."],
+  ["brauchen","","verbo","precisar","Ich brauche Hilfe.","Eu preciso de ajuda."],
+  ["können","","verbo","poder / saber (habilidade)","Kannst du schwimmen?","Você sabe nadar?"],
+  ["wollen","","verbo","querer","Ich will das nicht.","Eu não quero isso."],
+  ["müssen","","verbo","ter que / dever","Ich muss gehen.","Eu tenho que ir."],
+  ["wissen","","verbo","saber (fato)","Ich weiß es nicht.","Eu não sei."],
+  ["sehen","","verbo","ver","Ich sehe dich.","Eu te vejo."],
+  ["hören","","verbo","ouvir","Hörst du Musik?","Você está ouvindo música?"],
+  ["schreiben","","verbo","escrever","Ich schreibe einen Brief.","Eu escrevo uma carta."],
+  ["lesen","","verbo","ler","Sie liest ein Buch.","Ela lê um livro."],
+  ["kaufen","","verbo","comprar","Wir kaufen Brot.","Nós compramos pão."],
+  ["helfen","","verbo","ajudar","Kannst du mir helfen?","Você pode me ajudar?"],
+  ["finden","","verbo","achar / encontrar","Ich finde das gut.","Eu acho isso bom."],
+  ["glauben","","verbo","acreditar / achar","Ich glaube dir.","Eu acredito em você."],
+  ["fahren","","verbo","dirigir / viajar (veículo)","Wir fahren nach Berlin.","Nós vamos a Berlim (de carro/trem)."],
+  ["fliegen","","verbo","voar","Der Vogel fliegt hoch.","O pássaro voa alto."],
+  ["schlafen","","verbo","dormir","Ich schlafe früh.","Eu durmo cedo."],
+  ["aufstehen","","verbo","levantar-se (verbo separável)","Ich stehe um sieben auf.","Eu levanto às sete."],
+  ["anrufen","","verbo","ligar (telefone, verbo separável)","Ich rufe dich an.","Eu vou te ligar."],
+
+  // substantivos do dia a dia — der
+  ["Tisch","der","substantivo","mesa","Das Buch liegt auf dem Tisch.","O livro está sobre a mesa."],
+  ["Stuhl","der","substantivo","cadeira","Setz dich auf den Stuhl.","Sente-se na cadeira."],
+  ["Mann","der","substantivo","homem","Der Mann ist groß.","O homem é alto."],
+  ["Tag","der","substantivo","dia","Heute ist ein schöner Tag.","Hoje é um belo dia."],
+  ["Abend","der","substantivo","noite (entardecer)","Guten Abend!","Boa noite! (ao chegar)"],
+  ["Morgen","der","substantivo","manhã","Guten Morgen!","Bom dia!"],
+  ["Kaffee","der","substantivo","café","Ich trinke morgens Kaffee.","Eu bebo café de manhã."],
+  ["Wein","der","substantivo","vinho","Wir trinken Wein zum Essen.","Bebemos vinho na refeição."],
+  ["Freund","der","substantivo","amigo","Ein guter Freund hilft immer.","Um bom amigo sempre ajuda."],
+  ["Job","der","substantivo","emprego","Er hat einen neuen Job.","Ele tem um novo emprego."],
+  ["Computer","der","substantivo","computador","Der Computer ist kaputt.","O computador está quebrado."],
+  ["Garten","der","substantivo","jardim","Wir sitzen im Garten.","Nós sentamos no jardim."],
+  ["Hund","der","substantivo","cachorro","Der Hund bellt laut.","O cachorro late alto."],
+  ["Regen","der","substantivo","chuva","Der Regen fällt stark.","A chuva cai forte."],
+  ["Sommer","der","substantivo","verão","Im Sommer ist es heiß.","No verão faz calor."],
+  ["Winter","der","substantivo","inverno","Der Winter ist kalt.","O inverno é frio."],
+  ["Fußball","der","substantivo","futebol","Er spielt gern Fußball.","Ele gosta de jogar futebol."],
+  ["Bahnhof","der","substantivo","estação de trem","Der Bahnhof ist nah.","A estação é perto."],
+  ["Käse","der","substantivo","queijo","Ich mag Käse sehr.","Eu gosto muito de queijo."],
+
+  // substantivos — die
+  ["Frau","die","substantivo","mulher / senhora","Die Frau lächelt.","A mulher sorri."],
+  ["Zeit","die","substantivo","tempo (duração)","Ich habe keine Zeit.","Eu não tenho tempo."],
+  ["Woche","die","substantivo","semana","Nächste Woche fahre ich weg.","Semana que vem eu viajo."],
+  ["Stadt","die","substantivo","cidade","Berlin ist eine große Stadt.","Berlim é uma cidade grande."],
+  ["Schule","die","substantivo","escola","Die Kinder gehen zur Schule.","As crianças vão à escola."],
+  ["Küche","die","substantivo","cozinha","Sie kocht in der Küche.","Ela cozinha na cozinha."],
+  ["Tür","die","substantivo","porta","Mach die Tür zu.","Feche a porta."],
+  ["Straße","die","substantivo","rua","Die Straße ist leer.","A rua está vazia."],
+  ["Sonne","die","substantivo","sol","Die Sonne scheint heute.","O sol está brilhando hoje."],
+  ["Nacht","die","substantivo","noite","Gute Nacht!","Boa noite! (ao dormir)"],
+  ["Arbeit","die","substantivo","trabalho","Die Arbeit macht Spaß.","O trabalho é divertido."],
+  ["Wohnung","die","substantivo","apartamento","Unsere Wohnung ist klein.","Nosso apartamento é pequeno."],
+  ["Sprache","die","substantivo","idioma / língua","Deutsch ist eine schöne Sprache.","Alemão é uma língua bonita."],
+  ["Liebe","die","substantivo","amor","Liebe braucht Geduld.","O amor precisa de paciência."],
+  ["Musik","die","substantivo","música","Ich höre gern Musik.","Eu gosto de ouvir música."],
+  ["Zeitung","die","substantivo","jornal","Er liest die Zeitung.","Ele lê o jornal."],
+  ["Reise","die","substantivo","viagem","Die Reise war lang.","A viagem foi longa."],
+  ["Wand","die","substantivo","parede","Das Bild hängt an der Wand.","O quadro está pendurado na parede."],
+
+  // substantivos — das
+  ["Haus","das","substantivo","casa","Das Haus ist groß.","A casa é grande."],
+  ["Buch","das","substantivo","livro","Das Buch ist interessant.","O livro é interessante."],
+  ["Wasser","das","substantivo","água","Ich trinke viel Wasser.","Eu bebo muita água."],
+  ["Brot","das","substantivo","pão","Das Brot ist frisch.","O pão está fresco."],
+  ["Kind","das","substantivo","criança","Das Kind spielt draußen.","A criança brinca lá fora."],
+  ["Jahr","das","substantivo","ano","Nächstes Jahr reisen wir.","Ano que vem nós viajamos."],
+  ["Land","das","substantivo","país","Deutschland ist ein schönes Land.","A Alemanha é um belo país."],
+  ["Zimmer","das","substantivo","quarto / cômodo","Mein Zimmer ist ordentlich.","Meu quarto está arrumado."],
+  ["Fenster","das","substantivo","janela","Mach das Fenster auf.","Abra a janela."],
+  ["Wetter","das","substantivo","tempo (clima)","Das Wetter ist schön.","O tempo está bom."],
+  ["Auto","das","substantivo","carro","Das Auto ist neu.","O carro é novo."],
+  ["Handy","das","substantivo","celular","Mein Handy ist leer (Akku).","Meu celular está sem bateria."],
+  ["Bier","das","substantivo","cerveja","Wir trinken ein Bier.","Nós bebemos uma cerveja."],
+  ["Frühstück","das","substantivo","café da manhã","Das Frühstück ist fertig.","O café da manhã está pronto."],
+  ["Restaurant","das","substantivo","restaurante","Wir essen im Restaurant.","Nós comemos no restaurante."],
+  ["Spiel","das","substantivo","jogo","Das Spiel war spannend.","O jogo foi emocionante."],
+  ["Geld","das","substantivo","dinheiro","Ich habe kein Geld dabei.","Eu não tenho dinheiro comigo."],
+  ["Bett","das","substantivo","cama","Ich gehe ins Bett.","Eu vou para a cama."],
+
+  // adjetivos
+  ["gut","","adjetivo","bom","Das schmeckt gut.","Isso está gostoso."],
+  ["schlecht","","adjetivo","ruim","Mir geht es schlecht.","Eu não estou bem."],
+  ["groß","","adjetivo","grande / alto","Das Haus ist groß.","A casa é grande."],
+  ["klein","","adjetivo","pequeno","Der Hund ist klein.","O cachorro é pequeno."],
+  ["schön","","adjetivo","bonito(a)","Das ist ein schönes Bild.","Isso é um belo quadro."],
+  ["neu","","adjetivo","novo","Ich habe ein neues Auto.","Eu tenho um carro novo."],
+  ["alt","","adjetivo","velho / antigo","Das Buch ist sehr alt.","O livro é muito antigo."],
+  ["schnell","","adjetivo","rápido","Er läuft schnell.","Ele corre rápido."],
+  ["langsam","","adjetivo","devagar","Sprich bitte langsam.","Fale devagar, por favor."],
+  ["wichtig","","adjetivo","importante","Das ist sehr wichtig.","Isso é muito importante."],
+  ["einfach","","adjetivo","fácil / simples","Die Aufgabe ist einfach.","A tarefa é fácil."],
+  ["schwierig","","adjetivo","difícil","Deutsch ist manchmal schwierig.","Alemão às vezes é difícil."],
+  ["glücklich","","adjetivo","feliz","Ich bin sehr glücklich.","Eu estou muito feliz."],
+  ["müde","","adjetivo","cansado","Ich bin heute müde.","Eu estou cansado hoje."],
+  ["hungrig","","adjetivo","com fome","Bist du hungrig?","Você está com fome?"],
+  ["durstig","","adjetivo","com sede","Ich bin durstig.","Eu estou com sede."],
+  ["kalt","","adjetivo","frio","Das Wasser ist kalt.","A água está fria."],
+  ["heiß","","adjetivo","quente","Der Kaffee ist heiß.","O café está quente."],
+  ["billig","","adjetivo","barato","Das Hotel ist billig.","O hotel é barato."],
+  ["teuer","","adjetivo","caro","Das Auto ist teuer.","O carro é caro."],
+
+  // números
+  ["eins","","número","um","Ich habe eins.","Eu tenho um."],
+  ["zwei","","número","dois","Wir sind zwei.","Nós somos dois."],
+  ["drei","","número","três","Drei Kaffee, bitte.","Três cafés, por favor."],
+  ["vier","","número","quatro","Es ist vier Uhr.","São quatro horas."],
+  ["fünf","","número","cinco","Fünf Minuten noch.","Mais cinco minutos."],
+  ["sechs","","número","seis","Sechs Personen.","Seis pessoas."],
+  ["sieben","","número","sete","Um sieben Uhr.","Às sete horas."],
+  ["acht","","número","oito","Acht Tage.","Oito dias."],
+  ["neun","","número","nove","Neun Euro.","Nove euros."],
+  ["zehn","","número","dez","Zehn Minuten.","Dez minutos."],
+
+  // palavras de pergunta
+  ["was","","pronome","o que","Was ist das?","O que é isso?"],
+  ["wer","","pronome","quem","Wer ist das?","Quem é esse?"],
+  ["wo","","advérbio","onde","Wo bist du?","Onde você está?"],
+  ["wann","","advérbio","quando","Wann kommst du?","Quando você vem?"],
+  ["warum","","advérbio","por quê","Warum lachst du?","Por que você está rindo?"],
+  ["wie","","advérbio","como","Wie geht's?","Como vai?"],
+  ["welche","","pronome","qual","Welche Farbe magst du?","Qual cor você gosta?"],
+
+  // conectores úteis
+  ["und","","conjunção","e","Ich und du.","Eu e você."],
+  ["aber","","conjunção","mas","Ich will, aber ich kann nicht.","Eu quero, mas não posso."],
+  ["oder","","conjunção","ou","Tee oder Kaffee?","Chá ou café?"],
+  ["weil","","conjunção","porque","Ich bleibe, weil es regnet.","Eu fico porque está chovendo."],
+  ["dass","","conjunção","que (subordinação)","Ich glaube, dass es geht.","Eu acredito que vai dar certo."],
+  ["auch","","advérbio","também","Ich mag das auch.","Eu também gosto disso."],
+  ["schon","","advérbio","já","Ich bin schon fertig.","Eu já terminei."],
+  ["noch","","advérbio","ainda","Ich bin noch hier.","Eu ainda estou aqui."],
+  ["immer","","advérbio","sempre","Er kommt immer spät.","Ele sempre chega tarde."],
+  ["nie","","advérbio","nunca","Ich lüge nie.","Eu nunca minto."],
+
+  // palavras notoriamente difíceis de pronunciar (ótimas p/ praticar)
+  ["Eichhörnchen","das","substantivo","esquilo","Das Eichhörnchen läuft schnell.","O esquilo corre rápido."],
+  ["Streichholzschächtelchen","das","substantivo","caixinha de fósforos (trava-língua clássico)","Das ist ein Streichholzschächtelchen.","Isso é uma caixinha de fósforos."],
+  ["Kühlschrank","der","substantivo","geladeira","Der Kühlschrank ist leer.","A geladeira está vazia."],
+  ["Geschwindigkeit","die","substantivo","velocidade","Die Geschwindigkeit ist hoch.","A velocidade está alta."],
+  ["Entschuldigung","die","substantivo","desculpa / com licença","Entschuldigung für die Verspätung.","Desculpe pelo atraso."],
+  ["Frühstück","das","substantivo","café da manhã","Ich mache das Frühstück.","Eu faço o café da manhã."],
+  ["möchten","","verbo","gostaria (forma educada de querer)","Ich möchte einen Kaffee.","Eu gostaria de um café."],
+  ["wünschen","","verbo","desejar","Ich wünsche dir alles Gute.","Eu desejo tudo de bom para você."],
+];
+
+/* index rápido, primeira ocorrência de cada palavra (case-insensitive) */
+const DICT_MAP = {};
+DICT.forEach(entry => {
+  const key = entry[0].toLowerCase();
+  if(!DICT_MAP[key]) DICT_MAP[key] = entry;
+});
+
+/* ---------------------------------------------------------
+   MOTOR FONÉTICO — transliteração aproximada alemão -> "como
+   um leitor de português leria em voz alta"
+   Não é IPA; é uma aproximação pedagógica, sempre reforçada
+   pelo áudio real via Web Speech API.
+--------------------------------------------------------- */
+const VOWELS = "aeiouáéíóúêâãõ";
+
+function isVowel(ch){ return VOWELS.includes(ch); }
+
+/* Divide a palavra já transliterada em sílabas simples,
+   seguindo a lógica: consoante única passa pra sílaba seguinte,
+   consoante dobrada (mesma letra) se divide ao meio,
+   cluster de consoantes diferentes: a última fica com a sílaba seguinte. */
+function splitSyllables(s){
+  const groups = [];
+  let i = 0;
+  while(i < s.length){
+    if(isVowel(s[i])){
+      let start = i;
+      while(i < s.length && isVowel(s[i])) i++;
+      groups.push({type:"v", text:s.slice(start,i)});
+    } else {
+      let start = i;
+      while(i < s.length && !isVowel(s[i])) i++;
+      groups.push({type:"c", text:s.slice(start,i)});
+    }
+  }
+
+  const vowelIdx = groups.map((g,idx)=> g.type === "v" ? idx : -1).filter(idx => idx >= 0);
+  if(vowelIdx.length === 0) return [s];
+
+  let syllables = [];
+  let carry = "";
+
+  for(let k=0; k<vowelIdx.length; k++){
+    const vi = vowelIdx[k];
+    let syl = carry + groups[vi].text;
+    carry = "";
+    const nextVi = vowelIdx[k+1];
+    if(nextVi === undefined){
+      for(let gi=vi+1; gi<groups.length; gi++) syl += groups[gi].text;
+    } else {
+      let cluster = "";
+      for(let gi=vi+1; gi<nextVi; gi++) cluster += groups[gi].text;
+      if(cluster.length === 1){
+        carry = cluster;
+      } else if(cluster.length >= 2 && cluster[0] === cluster[1]){
+        syl += cluster[0];
+        carry = cluster.slice(1);
+      } else if(cluster.length >= 2){
+        syl += cluster.slice(0, -1);
+        carry = cluster.slice(-1);
+      }
+    }
+    syllables.push(syl);
+  }
+
+  const firstVi = vowelIdx[0];
+  if(firstVi > 0){
+    let lead = "";
+    for(let gi=0; gi<firstVi; gi++) lead += groups[gi].text;
+    syllables[0] = lead + syllables[0];
+  }
+
+  return syllables.filter(x => x.length > 0);
+}
+
+const UNSTRESSED_PREFIXES = ["ge","be","emp","ent","er","ver","zer","miss"];
+
+function toApproxPhonetic(raw){
+  let original = raw.trim().toLowerCase();
+  let s = original;
+
+  // protege combinações que não podem ser reprocessadas por regras seguintes
+  s = s.replace(/tsch/g, "§1§");
+  s = s.replace(/sch/g, "§2§");
+  s = s.replace(/([aou])ch/g, "$1§3§");   // ch forte (gutural) depois de a/o/u
+  s = s.replace(/ch/g, "§4§");             // ch suave
+
+  // combinações vocálicas (antes das trocas de vogal simples)
+  s = s.replace(/äu/g, "oi");
+  s = s.replace(/eu/g, "oi");
+  s = s.replace(/ei|ey/g, "ai");
+  s = s.replace(/ie/g, "i");
+  s = s.replace(/ig\b/g, "i§4§");  // -ig final soa como "i" + ch suave
+
+  // outras combinações de consoantes
+  s = s.replace(/ck/g, "k");
+  s = s.replace(/qu/g, "kv");
+  s = s.replace(/ph/g, "f");
+  s = s.replace(/th/g, "t");
+  s = s.replace(/dt/g, "t");
+  s = s.replace(/tz/g, "ts");
+  s = s.replace(/ß/g, "ss");
+
+  // letras isoladas
+  s = s.replace(/z/g, "ts");
+  s = s.replace(/v/g, "f");
+  s = s.replace(/w/g, "v");
+  s = s.replace(/j/g, "i");
+  s = s.replace(/y/g, "i");
+  s = s.replace(/ä/g, "é");
+  s = s.replace(/ö/g, "ê");
+  s = s.replace(/ü/g, "u");
+
+  // final "-er" soa quase como "a" fraco
+  s = s.replace(/er\b/g, "a");
+
+  // h mudo depois de vogal (indica vogal longa)
+  s = s.replace(/([aeiouéêáíóú])h/g, "$1");
+
+  // "tch" e "ch" (de sch) precisam virar um único símbolo antes de
+  // dividir em sílabas, senão a divisão corta o som ao meio.
+  // ch-forte/ch-suave viram "rr" direto — duas letras, tudo bem dividir.
+  s = s.replace(/§1§/g, "\u0001");
+  s = s.replace(/§2§/g, "\u0002");
+  s = s.replace(/§3§/g, "rr");
+  s = s.replace(/§4§/g, "rr");
+
+  const syllables = splitSyllables(s).map(syl =>
+    syl.replace(/\u0001/g, "tch").replace(/\u0002/g, "ch")
+  );
+
+  // define a sílaba tônica
+  let stressIndex = 0;
+  const prefixHit = UNSTRESSED_PREFIXES.find(p => original.startsWith(p) && original.length > p.length + 2);
+  if(prefixHit && syllables.length > 1) stressIndex = 1;
+
+  const displaySyllables = syllables.map((syl, idx) => {
+    return idx === stressIndex ? `<strong>${syl.toUpperCase()}</strong>` : syl.toLowerCase();
+  });
+
+  return { phonetic: displaySyllables.join("-"), plain: syllables.join("") };
+}
+
+/* ---------------------------------------------------------
+   ÁUDIO — Web Speech API
+--------------------------------------------------------- */
+let germanVoice = null;
+function loadVoices(){
+  const voices = window.speechSynthesis.getVoices();
+  germanVoice = voices.find(v => v.lang === "de-DE") || voices.find(v => v.lang && v.lang.startsWith("de")) || null;
+}
+if("speechSynthesis" in window){
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+function speak(text, rate){
+  if(!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "de-DE";
+  if(germanVoice) u.voice = germanVoice;
+  u.rate = rate || 0.85;
+  window.speechSynthesis.speak(u);
+}
+
+/* ---------------------------------------------------------
+   BUSCA / RENDER
+--------------------------------------------------------- */
+const wordInput = document.getElementById("wordInput");
+const searchBtn = document.getElementById("searchBtn");
+const resultEl = document.getElementById("result");
+const emptyState = document.getElementById("emptyState");
+const historyWrap = document.getElementById("historyWrap");
+const historyList = document.getElementById("historyList");
+const suggestionsEl = document.getElementById("suggestions");
+
+let history = [];
+
+const STARTER_WORDS = ["Kühlschrank","sprechen","schön","Entschuldigung","Eichhörnchen","möchten","Straße"];
+STARTER_WORDS.forEach(w=>{
+  const chip = document.createElement("button");
+  chip.className = "chip";
+  chip.textContent = w;
+  chip.onclick = ()=>{ wordInput.value = w; runSearch(); };
+  suggestionsEl.appendChild(chip);
+});
+
+function articleColorClass(article){
+  if(article === "der") return "der";
+  if(article === "die") return "die";
+  if(article === "das") return "das";
+  return "";
+}
+
+function render(word){
+  const key = word.toLowerCase();
+  const entry = DICT_MAP[key];
+  const { phonetic, plain } = toApproxPhonetic(word);
+
+  emptyState.style.display = "none";
+  resultEl.innerHTML = "";
+
+  const card = document.createElement("div");
+  card.className = "card";
+
+  let topHTML = "";
+  if(entry){
+    const [w, article, type, meaning] = entry;
+    if(article){
+      topHTML += `<span class="badge ${articleColorClass(article)}">${article}</span>`;
+    }
+    topHTML += `<span class="badge type">${type}</span>`;
+  }
+
+  const headwordArticle = entry && entry[1] ? `<span class="article">${entry[1]}</span>` : "";
+
+  card.innerHTML = `
+    <div class="card-top">
+      <div>${topHTML}</div>
+    </div>
+    <div class="headword">${headwordArticle}${word}</div>
+    <div class="meaning">${entry ? entry[3] : "Significado não está no dicionário local — mas a pronúncia abaixo funciona igual."}</div>
+
+    <div class="play-row">
+      <button class="play-btn" id="playNormal" title="Ouvir">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="play-btn slow" id="playSlow">🐢 devagar</button>
+    </div>
+
+    <div class="section-label">Como pronunciar (leia como português)</div>
+    <div class="phonetic-box">${phonetic}</div>
+    <div class="phonetic-hint">A sílaba em maiúscula é a mais forte. O botão de áudio acima toca a pronúncia real.</div>
+
+    ${entry && entry[4] ? `
+      <div class="section-label">Exemplo</div>
+      <div class="example">
+        <div class="de">${entry[4]}</div>
+        <div class="pt">${entry[5]}</div>
+      </div>
+    ` : ""}
+
+    ${!entry ? `<div class="not-found">Essa palavra não está no dicionário curado ainda — se quiser, me peçam para adicionar mais palavras ao arquivo. Mesmo assim, o áudio acima já usa a pronúncia real do alemão.</div>` : ""}
+  `;
+
+  resultEl.appendChild(card);
+
+  document.getElementById("playNormal").onclick = ()=> speak(word, 0.9);
+  document.getElementById("playSlow").onclick = ()=> speak(word, 0.55);
+
+  // histórico
+  if(!history.includes(word)){
+    history.unshift(word);
+    if(history.length > 12) history.pop();
+    renderHistory();
+  }
+}
+
+function renderHistory(){
+  if(history.length === 0){ historyWrap.style.display = "none"; return; }
+  historyWrap.style.display = "block";
+  historyList.innerHTML = "";
+  history.forEach(w=>{
+    const chip = document.createElement("button");
+    chip.className = "hist-chip";
+    chip.textContent = w;
+    chip.onclick = ()=>{ wordInput.value = w; runSearch(); };
+    historyList.appendChild(chip);
+  });
+}
+
+function runSearch(){
+  const word = wordInput.value.trim();
+  if(!word) return;
+  render(word);
+}
+
+searchBtn.onclick = runSearch;
+wordInput.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") runSearch();
+});
+</script>
+</body>
+</html>
