@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Die 4 Fälle – Treino</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1d2330;--mut:#667085;--bd:#e3e6ec;--pri:#2f5fd0;--ok:#1f9d55;--bad:#d6453a;
+--N:#2f6fe0;--A:#d9483b;--D:#2e9d5b;--G:#c98410}
+@media (prefers-color-scheme:dark){:root{--bg:#12151c;--card:#1b202b;--tx:#e8ebf2;--mut:#98a2b3;--bd:#2c3342;--pri:#6b93f5;--ok:#3ec27a;--bad:#f06a5e;
+--N:#6b9bff;--A:#ff7d70;--D:#4fcf86;--G:#f0b04a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;margin:.2rem 0}
+.sub{color:var(--mut);font-size:.9rem;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.bars{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bar{font-size:.8rem}
+.bar b{display:block;margin-bottom:2px}
+.track{height:8px;background:var(--bd);border-radius:6px;overflow:hidden}
+.fill{height:100%;border-radius:6px}
+.row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.chip,.tab{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:7px 13px;font-size:.88rem;cursor:pointer;white-space:nowrap}
+.tab.on,.chip.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.desc{color:var(--mut);font-size:.88rem;margin:8px 0}
+button.main{background:var(--pri);color:#fff;border:0;border-radius:10px;padding:11px 18px;font-size:1rem;cursor:pointer}
+button.ghost{background:transparent;color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;font-size:.95rem;cursor:pointer}
+.q{font-size:1.2rem;margin:10px 0}
+.q mark{background:rgba(47,95,208,.18);color:inherit;border-radius:4px;padding:0 4px;border-bottom:2px solid var(--pri)}
+.blank{display:inline-block;min-width:60px;border-bottom:2px solid var(--tx);text-align:center;color:var(--mut)}
+.hint{color:var(--mut);font-size:.88rem;margin-bottom:8px}
+.lbl{font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+input.ans{width:100%;padding:11px 12px;font-size:1.05rem;border:1.5px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
+input.ans:focus{outline:none;border-color:var(--pri)}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;padding:11px 13px;border:1.5px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);font-size:1rem;cursor:pointer}
+.opt:hover{border-color:var(--pri)}
+.opt.right{border-color:var(--ok);background:rgba(31,157,85,.12)}
+.opt.wrong{border-color:var(--bad);background:rgba(214,69,58,.12)}
+.cases{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cbtn{padding:12px;border-radius:10px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);font-size:1rem;cursor:pointer;border-left-width:6px}
+.cbtn.right{background:rgba(31,157,85,.14);border-color:var(--ok)}
+.cbtn.wrong{background:rgba(214,69,58,.14);border-color:var(--bad)}
+.fb{margin-top:12px;padding:12px;border-radius:10px;border:1px solid var(--bd)}
+.fb.ok{border-color:var(--ok);background:rgba(31,157,85,.08)}
+.fb.no{border-color:var(--bad);background:rgba(214,69,58,.08)}
+.tag{display:inline-block;font-size:.75rem;padding:1px 8px;border-radius:999px;color:#fff;margin-right:4px}
+.prog{height:6px;background:var(--bd);border-radius:6px;overflow:hidden;margin-bottom:6px}
+.prog>div{height:100%;background:var(--pri);transition:width .25s}
+.meta{display:flex;justify-content:space-between;color:var(--mut);font-size:.82rem}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid var(--bd);padding:5px 6px;text-align:center}
+th{background:var(--bg)}
+details summary{cursor:pointer;font-weight:600}
+.wrongs{color:var(--bad)}
+ul{padding-left:1.1rem;margin:.3rem 0}
+.sp{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Die vier Fälle 🇩🇪</h1>
+  <div class="sub">Nominativ · Akkusativ · Dativ · Genitiv — produza, erre, repita. <span id="streak"></span></div>
+
+  <div class="card">
+    <div class="bars" id="bars"></div>
+    <div class="desc" style="margin:8px 0 0">Acertos de primeira, acumulado.</div>
+  </div>
+
+  <details class="card">
+    <summary>📋 Cola rápida (abra se travar)</summary>
+    <p style="margin:.6rem 0 .3rem"><b>Pergunta-chave:</b> N = <i>quem faz/é?</i> · A = <i>o quê/quem sofre a ação?</i> · D = <i>para quem / com quem?</i> · G = <i>de quem?</i></p>
+    <table>
+      <tr><th></th><th>masc.</th><th>fem.</th><th>neutro</th><th>plural</th></tr>
+      <tr><th>Nom.</th><td>der / ein</td><td>die / eine</td><td>das / ein</td><td>die</td></tr>
+      <tr><th>Akk.</th><td><b>den / einen</b></td><td>die / eine</td><td>das / ein</td><td>die</td></tr>
+      <tr><th>Dat.</th><td><b>dem / einem</b></td><td><b>der / einer</b></td><td><b>dem / einem</b></td><td><b>den</b> +n</td></tr>
+      <tr><th>Gen.</th><td><b>des / eines</b> +s</td><td><b>der / einer</b></td><td><b>des / eines</b> +s</td><td><b>der</b></td></tr>
+    </table>
+    <ul style="font-size:.9rem">
+      <li><b>Akk.:</b> durch, für, gegen, ohne, um</li>
+      <li><b>Dat.:</b> aus, bei, mit, nach, seit, von, zu</li>
+      <li><b>Wechsel:</b> in, an, auf, über, unter, vor, hinter, neben, zwischen → <i>wohin?</i> = Akk. · <i>wo?</i> = Dat.</li>
+      <li><b>Gen.:</b> wegen, trotz, während, statt</li>
+      <li><b>Verbos de Dativ:</b> helfen, danken, gefallen, gehören, folgen, antworten, passen, schmecken</li>
+    </ul>
+  </details>
+
+  <div class="card">
+    <div class="row" id="tabs"></div>
+    <div class="desc" id="mdesc"></div>
+    <div class="row" id="filters"></div>
+    <div class="sp"><button class="main" id="go">Começar rodada</button></div>
+  </div>
+
+  <div class="card" id="play" style="display:none">
+    <div class="prog"><div id="pb" style="width:0"></div></div>
+    <div class="meta"><span id="pcount"></span><button class="ghost" id="quit" style="padding:2px 10px;font-size:.8rem">sair</button></div>
+    <div id="qa"></div>
+  </div>
+</div>
+
+<script>
+const CASES={N:'Nominativ',A:'Akkusativ',D:'Dativ',G:'Genitiv'};
+const CCOL={N:'var(--N)',A:'var(--A)',D:'var(--D)',G:'var(--G)'};
+const SESSION=12;
+
+/* ---------- DADOS ---------- */
+const LUECK=[
+{s:"___ Techniker repariert den Server.",a:["der"],c:'N',h:"Techniker (m.) · artigo definido",e:"Quem repara? O técnico é o sujeito → Nominativ. Masculino: der."},
+{s:"Das ist ___ neue Router.",a:["der"],c:'N',h:"Router (m.) · artigo definido",e:"Depois de 'sein' (ser) vem Nominativ, não Akkusativ. Masculino: der."},
+{s:"___ Kabel ist zu kurz.",a:["das"],c:'N',h:"Kabel (n.) · artigo definido",e:"Sujeito → Nominativ. Neutro: das."},
+{s:"___ Chefin ist heute nicht da.",a:["die"],c:'N',h:"Chefin (f.) · artigo definido",e:"Sujeito feminino → die."},
+{s:"Ich brauche ___ Laptop.",a:["einen"],c:'A',h:"Laptop (m.) · ein-",e:"brauchen pede Akkusativ. Masculino indefinido: ein → einen."},
+{s:"Er installiert ___ Programm.",a:["das"],c:'A',h:"Programm (n.) · artigo definido",e:"Objeto direto neutro: o artigo não muda → das."},
+{s:"Siehst du ___ Kamera?",a:["die"],c:'A',h:"Kamera (f.) · artigo definido",e:"Feminino não muda no Akkusativ → die."},
+{s:"Sie hat ___ Schlüssel verloren.",a:["den"],c:'A',h:"Schlüssel (m.) · artigo definido",e:"Objeto direto masculino: der → den."},
+{s:"Wir kaufen ___ Drucker.",a:["einen"],c:'A',h:"Drucker (m.) · ein-",e:"Objeto direto masculino: ein → einen."},
+{s:"Ich helfe ___ Kollegen.",a:["dem"],c:'D',h:"Kollege (m.) · artigo definido",e:"helfen é verbo de Dativ. Masculino: dem."},
+{s:"Das Kabel gehört ___ Frau.",a:["der"],c:'D',h:"Frau (f.) · artigo definido",e:"gehören + Dativ. Feminino dativo: der."},
+{s:"Ich gebe ___ Kind ein Buch.",a:["dem"],c:'D',h:"Kind (n.) · artigo definido",e:"Para quem eu dou? Objeto indireto → Dativ. Neutro: dem."},
+{s:"Ich zeige ___ Kindern das Foto.",a:["den"],c:'D',h:"Kinder (plural) · artigo definido",e:"Dativ plural: den + substantivo com -n (Kindern)."},
+{s:"Er antwortet ___ Chef.",a:["dem"],c:'D',h:"Chef (m.) · artigo definido",e:"antworten + Dativ. Masculino: dem."},
+{s:"Mit ___ Auto fahre ich zur Arbeit.",a:["dem"],c:'D',h:"Auto (n.) · artigo definido",e:"mit sempre pede Dativ. Neutro: dem."},
+{s:"Ich wohne bei ___ Eltern.",a:["meinen"],c:'D',h:"Eltern (plural) · mein-",e:"bei pede Dativ. Plural dativo: mein → meinen."},
+{s:"Das ist das Auto ___ Mannes.",a:["des"],c:'G',h:"Mann (m.) · artigo definido",e:"Posse ('do homem') → Genitiv. Masculino: des + substantivo ganha -(e)s."},
+{s:"Die Farbe ___ Kabels ist blau.",a:["des"],c:'G',h:"Kabel (n.) · artigo definido",e:"Genitiv neutro: des + -s (Kabels)."},
+{s:"Das Handy ___ Frau ist neu.",a:["der"],c:'G',h:"Frau (f.) · artigo definido",e:"Genitiv feminino: der (o substantivo não muda)."},
+{s:"Trotz ___ Regens gehen wir raus.",a:["des"],c:'G',h:"Regen (m.) · artigo definido",e:"trotz pede Genitiv → des Regens."},
+{s:"Wegen ___ Problems komme ich später.",a:["des"],c:'G',h:"Problem (n.) · artigo definido",e:"wegen pede Genitiv → des Problems."},
+{s:"Die Bücher ___ Kinder liegen hier.",a:["der"],c:'G',h:"Kinder (plural) · artigo definido",e:"Genitiv plural: der."},
+{s:"Während ___ Arbeit höre ich Musik.",a:["der"],c:'G',h:"Arbeit (f.) · artigo definido",e:"während pede Genitiv. Feminino: der."}
+];
+
+const CASO=[
+{s:"[[Der Server]] ist alt.",c:'N',e:"Sujeito da frase (quem é/faz) → Nominativ."},
+{s:"Ich repariere [[den Server]].",c:'A',e:"Objeto direto: o que eu conserto? der Server → den Server."},
+{s:"Ich helfe [[dem Techniker]].",c:'D',e:"helfen sempre pede Dativ."},
+{s:"Das ist das Büro [[des Chefs]].",c:'G',e:"Posse ('do chefe') → Genitiv. Masculino ganha -s."},
+{s:"Sie schreibt [[ihrem Chef]] eine E-Mail.",c:'D',e:"Para quem ela escreve? Objeto indireto → Dativ."},
+{s:"Der Hund beißt [[den Mann]].",c:'A',e:"Quem sofre a mordida? Objeto direto → Akkusativ."},
+{s:"Ich fahre mit [[dem Zug]].",c:'D',e:"mit sempre pede Dativ."},
+{s:"Wegen [[des Wetters]] bleiben wir zu Hause.",c:'G',e:"wegen pede Genitiv (neutro: des … -s)."},
+{s:"Wir gehen durch [[den Park]].",c:'A',e:"durch sempre pede Akkusativ."},
+{s:"[[Die Frau]] ist Ärztin.",c:'N',e:"Sujeito → Nominativ."},
+{s:"Ich warte auf [[den Bus]].",c:'A',e:"warten auf + Akkusativ."},
+{s:"Das Ziel [[unseres Projekts]] ist klar.",c:'G',e:"Posse ('do nosso projeto') → Genitiv."},
+{s:"Er gibt [[der Frau]] den Schlüssel.",c:'D',e:"Para quem ele dá? Objeto indireto → Dativ (feminino: der)."},
+{s:"Er gibt der Frau [[den Schlüssel]].",c:'A',e:"O que ele dá? Objeto direto → Akkusativ (masculino: den)."},
+{s:"Ich gehe in [[die Küche]].",c:'A',e:"in + movimento (wohin?) → Akkusativ."},
+{s:"Ich bin in [[der Küche]].",c:'D',e:"in + lugar parado (wo?) → Dativ."},
+{s:"Das Buch liegt auf [[dem Tisch]].",c:'D',e:"Parado (wo?) → Dativ."},
+{s:"Ich lege das Buch auf [[den Tisch]].",c:'A',e:"Movimento (wohin?) → Akkusativ."},
+{s:"[[Mein Computer]] ist kaputt.",c:'N',e:"Sujeito → Nominativ."},
+{s:"Wie gefällt [[dir]] das Auto?",c:'D',e:"gefallen pede Dativ: o carro agrada a você → dir."},
+{s:"[[Mir]] ist kalt.",c:'D',e:"Sensação 'para mim' → Dativ."},
+{s:"Ich habe [[keinen Hunger]].",c:'A',e:"haben + Akkusativ. Hunger é masculino: kein → keinen."},
+{s:"Wir danken [[den Kunden]].",c:'D',e:"danken + Dativ. Dativ plural: den + -n."},
+{s:"Ich rufe [[meinen Chef]] an.",c:'A',e:"anrufen + Akkusativ (diferente do português 'ligar para')."},
+{s:"Ich folge [[dem Weg]].",c:'D',e:"folgen + Dativ."},
+{s:"Ich kaufe das Auto [[meines Bruders]].",c:'G',e:"Posse ('do meu irmão') → Genitiv: meines + -s."}
+];
+
+const PREP=[
+{s:"Das Geschenk ist für ___ Chef.",a:["den"],c:'A',h:"für · Chef (m.)",e:"für sempre pede Akkusativ → den."},
+{s:"Ohne ___ Internet kann ich nicht arbeiten.",a:["das"],c:'A',h:"ohne · Internet (n.)",e:"ohne sempre pede Akkusativ → das."},
+{s:"Wir gehen durch ___ Stadt.",a:["die"],c:'A',h:"durch · Stadt (f.)",e:"durch sempre pede Akkusativ → die."},
+{s:"Das Auto fährt gegen ___ Baum.",a:["den"],c:'A',h:"gegen · Baum (m.)",e:"gegen sempre pede Akkusativ → den."},
+{s:"Das Café ist um ___ Ecke.",a:["die"],c:'A',h:"um · Ecke (f.)",e:"um sempre pede Akkusativ (um die Ecke)."},
+{s:"Ich warte auf ___ Antwort.",a:["die"],c:'A',h:"warten auf · Antwort (f.)",e:"warten auf + Akkusativ → die."},
+{s:"Ich fahre mit ___ Bus.",a:["dem"],c:'D',h:"mit · Bus (m.)",e:"mit sempre pede Dativ → dem."},
+{s:"Er kommt aus ___ Küche.",a:["der"],c:'D',h:"aus · Küche (f.)",e:"aus sempre pede Dativ. Feminino: der."},
+{s:"Seit ___ Montag bin ich krank.",a:["dem"],c:'D',h:"seit · Montag (m.)",e:"seit sempre pede Dativ → dem."},
+{s:"Ich gehe zu ___ Kollegen.",a:["dem"],c:'D',h:"zu · Kollege (m.)",e:"zu sempre pede Dativ → dem (e pode contrair: zum)."},
+{s:"Nach ___ Meeting rufe ich den Kunden an.",a:["dem"],c:'D',h:"nach · Meeting (n.)",e:"nach sempre pede Dativ → dem."},
+{s:"Ich bin bei ___ Firma.",a:["der"],c:'D',h:"bei · Firma (f.)",e:"bei sempre pede Dativ. Feminino: der."},
+{s:"Wohin? Ich lege das Handy auf ___ Tisch.",a:["den"],c:'A',h:"auf · Tisch (m.) · Wechselpräposition",e:"Wohin? = movimento → Akkusativ → den."},
+{s:"Wo? Das Handy liegt auf ___ Tisch.",a:["dem"],c:'D',h:"auf · Tisch (m.) · Wechselpräposition",e:"Wo? = parado → Dativ → dem."},
+{s:"Wohin? Wir gehen in ___ Kino.",a:["das"],c:'A',h:"in · Kino (n.) · Wechselpräposition",e:"Wohin? = movimento → Akkusativ → das."},
+{s:"Wo? Wir sind in ___ Kino.",a:["dem"],c:'D',h:"in · Kino (n.) · Wechselpräposition",e:"Wo? = parado → Dativ → dem (in dem = im)."},
+{s:"Wohin? Er hängt das Bild an ___ Wand.",a:["die"],c:'A',h:"an · Wand (f.) · Wechselpräposition",e:"Wohin? = movimento → Akkusativ → die."},
+{s:"Wo? Das Bild hängt an ___ Wand.",a:["der"],c:'D',h:"an · Wand (f.) · Wechselpräposition",e:"Wo? = parado → Dativ. Feminino: der."},
+{s:"Wo? Die Katze sitzt unter ___ Stuhl.",a:["dem"],c:'D',h:"unter · Stuhl (m.) · Wechselpräposition",e:"Wo? = parado → Dativ → dem."},
+{s:"Wohin? Ich stelle den Server neben ___ Schrank.",a:["den"],c:'A',h:"neben · Schrank (m.) · Wechselpräposition",e:"Wohin? = movimento → Akkusativ → den."},
+{s:"Wo? Das Auto steht vor ___ Haus.",a:["dem"],c:'D',h:"vor · Haus (n.) · Wechselpräposition",e:"Wo? = parado → Dativ → dem."},
+{s:"Wegen ___ Fehlers ist das System down.",a:["des"],c:'G',h:"wegen · Fehler (m.)",e:"wegen pede Genitiv → des Fehlers."},
+{s:"Statt ___ Kaffees trinke ich Tee.",a:["des"],c:'G',h:"statt · Kaffee (m.)",e:"statt pede Genitiv → des Kaffees."},
+{s:"Trotz ___ Hitze arbeiten wir weiter.",a:["der"],c:'G',h:"trotz · Hitze (f.)",e:"trotz pede Genitiv. Feminino: der."},
+{s:"Während ___ Meetings esse ich nichts.",a:["des"],c:'G',h:"während · Meeting (n.)",e:"während pede Genitiv → des Meetings."}
+];
+
+const FRASE=[
+{pt:"Eu preciso de um computador novo.",a:["Ich brauche einen neuen Computer","Ich brauche einen neuen Rechner","Ich benötige einen neuen Computer"],c:'A',h:"brauchen + Akk. · Computer é masculino",e:"Objeto direto masculino: einen neuen Computer."},
+{pt:"Eu ajudo o meu colega.",a:["Ich helfe meinem Kollegen"],c:'D',h:"helfen = Dativ",e:"helfen + Dativ: meinem Kollegen."},
+{pt:"O carro do meu chefe é novo.",a:["Das Auto meines Chefs ist neu","Das Auto von meinem Chef ist neu"],c:'G',h:"posse → Genitiv",e:"Genitiv: meines Chefs (ou, na fala, von meinem Chef)."},
+{pt:"Eu dou o cabo ao técnico.",a:["Ich gebe dem Techniker das Kabel","Ich gebe das Kabel dem Techniker"],c:'DA',h:"para quem (Dativ) → o que (Akkusativ)",e:"Techniker (Dativ, m.) = dem Techniker · Kabel (Akk., n.) = das Kabel."},
+{pt:"A mulher compra uma impressora.",a:["Die Frau kauft einen Drucker"],c:'NA',h:"atenção: Drucker é masculino",e:"Sujeito: die Frau (N). Objeto: einen Drucker (A, masculino)."},
+{pt:"Eu vou de ônibus para o trabalho.",a:["Ich fahre mit dem Bus zur Arbeit","Ich fahre mit dem Bus zu der Arbeit","Ich fahre mit dem Bus zum Arbeitsplatz","Ich fahre mit dem Bus zur Arbeitsstelle"],c:'D',h:"mit e zu pedem Dativ",e:"mit dem Bus · zur (zu der) Arbeit — ambos Dativ."},
+{pt:"Ele mostra o servidor ao cliente.",a:["Er zeigt dem Kunden den Server","Er zeigt den Server dem Kunden"],c:'DA',h:"para quem + o quê",e:"dem Kunden (D) · den Server (A)."},
+{pt:"Por causa do problema, eu fico em casa.",a:["Wegen des Problems bleibe ich zu Hause","Wegen des Problems bleibe ich zuhause","Ich bleibe wegen des Problems zu Hause","Ich bleibe wegen des Problems zuhause"],c:'G',h:"wegen = Genitiv",e:"wegen des Problems (neutro: des + -s)."},
+{pt:"Eu coloco o notebook sobre a mesa.",a:["Ich lege den Laptop auf den Tisch","Ich stelle den Laptop auf den Tisch","Ich lege das Notebook auf den Tisch","Ich stelle das Notebook auf den Tisch"],c:'A',h:"movimento → wohin?",e:"Wechselpräposition com movimento → Akkusativ: auf den Tisch."},
+{pt:"O notebook está sobre a mesa.",a:["Der Laptop liegt auf dem Tisch","Der Laptop steht auf dem Tisch","Das Notebook liegt auf dem Tisch","Das Notebook steht auf dem Tisch"],c:'ND',h:"parado → wo?",e:"Parado → Dativ: auf dem Tisch."},
+{pt:"Eu pergunto ao meu irmão.",a:["Ich frage meinen Bruder"],c:'A',h:"cuidado: fragen NÃO é verbo de Dativ",e:"fragen pede Akkusativ (diferente do português 'perguntar a'): meinen Bruder."},
+{pt:"O celular da minha esposa está quebrado.",a:["Das Handy meiner Frau ist kaputt","Das Handy von meiner Frau ist kaputt","Das Smartphone meiner Frau ist kaputt","Das Telefon meiner Frau ist kaputt"],c:'G',h:"posse → Genitiv",e:"Genitiv feminino: meiner Frau."},
+{pt:"Eu moro com os meus pais.",a:["Ich wohne bei meinen Eltern","Ich wohne mit meinen Eltern zusammen"],c:'D',h:"bei / mit = Dativ",e:"Dativ plural: meinen Eltern."},
+{pt:"Sem a minha ferramenta eu não consigo trabalhar.",a:["Ohne mein Werkzeug kann ich nicht arbeiten"],c:'A',h:"ohne = Akkusativ",e:"ohne + Akk. Werkzeug é neutro, então mein não muda."},
+{pt:"Depois da reunião eu ligo para o cliente.",a:["Nach der Besprechung rufe ich den Kunden an","Nach dem Meeting rufe ich den Kunden an","Nach der Sitzung rufe ich den Kunden an","Ich rufe den Kunden nach dem Meeting an","Ich rufe den Kunden nach der Besprechung an"],c:'DA',h:"nach = Dativ · anrufen = Akkusativ",e:"nach dem Meeting / nach der Besprechung (D) · den Kunden anrufen (A)."},
+{pt:"Esse presente é para a minha esposa.",a:["Das Geschenk ist für meine Frau","Dieses Geschenk ist für meine Frau"],c:'A',h:"für = Akkusativ",e:"für + Akk.; feminino não muda: meine Frau."},
+{pt:"O cliente agradece ao técnico.",a:["Der Kunde dankt dem Techniker"],c:'ND',h:"danken = Dativ",e:"Sujeito: der Kunde (N). danken + Dativ: dem Techniker."},
+{pt:"Eu vou para o escritório.",a:["Ich gehe ins Büro","Ich gehe in das Büro","Ich fahre ins Büro","Ich fahre in das Büro"],c:'A',h:"movimento → wohin?",e:"Movimento → Akkusativ: in das Büro (= ins Büro)."},
+{pt:"Eu estou no escritório.",a:["Ich bin im Büro","Ich bin in dem Büro"],c:'D',h:"parado → wo?",e:"Parado → Dativ: in dem Büro (= im Büro)."},
+{pt:"Ele escreve um e-mail para a empresa.",a:["Er schreibt der Firma eine E-Mail","Er schreibt eine E-Mail an die Firma","Er schreibt der Firma eine Mail","Er schreibt eine Mail an die Firma"],c:'DA',h:"duas formas possíveis",e:"der Firma (D) + eine E-Mail (A), ou eine E-Mail an die Firma (an + Akk.)."}
+];
+
+const ERRO=[
+{w:"Ich helfe meinen Bruder.",o:["Ich helfe meinem Bruder.","Ich helfe mein Bruder.","Ich helfe meines Bruders."],c:'D',e:"helfen pede Dativ: meinem Bruder."},
+{w:"Ich sehe der Mann.",o:["Ich sehe den Mann.","Ich sehe dem Mann.","Ich sehe des Mannes."],c:'A',e:"sehen + Akkusativ: der Mann → den Mann."},
+{w:"Wegen dem Regen bleibe ich zu Hause.",o:["Wegen des Regens bleibe ich zu Hause.","Wegen den Regen bleibe ich zu Hause.","Wegen der Regen bleibe ich zu Hause."],c:'G',e:"Na fala, 'wegen dem' é comum, mas o correto é Genitiv: wegen des Regens."},
+{w:"Ich fahre mit den Bus.",o:["Ich fahre mit dem Bus.","Ich fahre mit der Bus.","Ich fahre mit des Bus."],c:'D',e:"mit sempre pede Dativ: dem Bus."},
+{w:"Er gibt den Frau das Buch.",o:["Er gibt der Frau das Buch.","Er gibt die Frau das Buch.","Er gibt dem Frau das Buch."],c:'D',e:"Para quem ele dá? Dativ feminino: der Frau."},
+{w:"Ich gehe in dem Park.",p:"(Quero dizer: vou ao parque.)",o:["Ich gehe in den Park.","Ich gehe in der Park.","Ich gehe in des Parks."],c:'A',e:"Movimento (wohin?) → Akkusativ: in den Park."},
+{w:"Das Auto des Mann ist neu.",o:["Das Auto des Mannes ist neu.","Das Auto der Mann ist neu.","Das Auto dem Mann ist neu."],c:'G',e:"Genitiv masculino: des + substantivo ganha -(e)s → des Mannes."},
+{w:"Ich frage dem Chef.",o:["Ich frage den Chef.","Ich frage der Chef.","Ich frage des Chefs."],c:'A',e:"fragen pede Akkusativ (armadilha: não é Dativ!)."},
+{w:"Ohne dem Handy bin ich verloren.",o:["Ohne das Handy bin ich verloren.","Ohne den Handy bin ich verloren.","Ohne des Handys bin ich verloren."],c:'A',e:"ohne sempre pede Akkusativ; neutro: das Handy."},
+{w:"Der Lehrer erklärt die Schüler die Regel.",o:["Der Lehrer erklärt den Schülern die Regel.","Der Lehrer erklärt der Schüler die Regel.","Der Lehrer erklärt den Schüler die Regel."],c:'D',e:"Para quem explica? Dativ plural: den Schülern (+n)."},
+{w:"Wir wohnen in die Stadt.",p:"(Quero dizer: moramos na cidade — parado.)",o:["Wir wohnen in der Stadt.","Wir wohnen in den Stadt.","Wir wohnen in das Stadt."],c:'D',e:"Parado (wo?) → Dativ feminino: in der Stadt."},
+{w:"Ich kaufe ein Computer.",o:["Ich kaufe einen Computer.","Ich kaufe einem Computer.","Ich kaufe eines Computers."],c:'A',e:"Objeto direto masculino: ein → einen."},
+{w:"Das ist das Buch von meine Schwester.",o:["Das ist das Buch von meiner Schwester.","Das ist das Buch von meinen Schwester.","Das ist das Buch von meinem Schwester."],c:'D',e:"von sempre pede Dativ; feminino: meiner."},
+{w:"Ich danke dich.",o:["Ich danke dir.","Ich danke deiner.","Ich danke du."],c:'D',e:"danken + Dativ: du → dir."},
+{w:"Er legt das Buch auf dem Tisch.",p:"(Quero dizer: ele coloca o livro sobre a mesa.)",o:["Er legt das Buch auf den Tisch.","Er legt das Buch auf der Tisch.","Er legt das Buch auf des Tisches."],c:'A',e:"Movimento → Akkusativ: auf den Tisch."},
+{w:"Die Katze schläft unter den Tisch.",o:["Die Katze schläft unter dem Tisch.","Die Katze schläft unter der Tisch.","Die Katze schläft unter des Tisches."],c:'D',e:"schlafen = parado (wo?) → Dativ: unter dem Tisch."}
+];
+
+function genBlitz(){
+  const def={N:{m:'der',f:'die',n:'das',p:'die'},A:{m:'den',f:'die',n:'das',p:'die'},D:{m:'dem',f:'der',n:'dem',p:'den'},G:{m:'des',f:'der',n:'des',p:'der'}};
+  const ind={N:{m:'ein',f:'eine',n:'ein'},A:{m:'einen',f:'eine',n:'ein'},D:{m:'einem',f:'einer',n:'einem'},G:{m:'eines',f:'einer',n:'eines'}};
+  const noun={m:{N:'Server',A:'Server',D:'Server',G:'Servers'},f:{N:'Tastatur',A:'Tastatur',D:'Tastatur',G:'Tastatur'},n:{N:'Kabel',A:'Kabel',D:'Kabel',G:'Kabels'},p:{N:'Kabel',A:'Kabel',D:'Kabeln',G:'Kabel'}};
+  const gl={m:'masculino',f:'feminino',n:'neutro',p:'plural'};
+  const out=[];
+  for(const c of 'NADG') for(const g of 'mfnp'){
+    out.push({s:`___ ${noun[g][c]}${g==='p'?' (plural)':''}`,a:[def[c][g]],c,h:`${CASES[c]} · ${gl[g]} · artigo definido`,e:`${CASES[c]} + ${gl[g]} → ${def[c][g]}.`});
+    if(g!=='p') out.push({s:`___ ${noun[g][c]}`,a:[ind[c][g]],c,h:`${CASES[c]} · ${gl[g]} · artigo indefinido (ein-)`,e:`${CASES[c]} + ${gl[g]} → ${ind[c][g]}.`});
+  }
+  return out;
+}
+
+const MODES={
+ lueck:{name:'Artigos',type:'fill',desc:'Complete a lacuna digitando o artigo/pronome certo. Os 4 casos misturados.',pool:()=>LUECK},
+ caso:{name:'Qual caso?',type:'case',desc:'Veja a parte destacada e identifique o caso. Treina o reflexo de reconhecer.',pool:()=>CASO},
+ prep:{name:'Preposições',type:'fill',desc:'Preposição manda no caso. Inclui Wechselpräpositionen: wo? (Dativ) × wohin? (Akkusativ).',pool:()=>PREP},
+ frase:{name:'Montar frase',type:'sent',desc:'Do português para o alemão, digitando a frase inteira. É aqui que o caso vira produção ativa. Aceito ae/oe/ue/ss no lugar de ä/ö/ü/ß.',pool:()=>FRASE},
+ erro:{name:'Caçar erro',type:'err',desc:'A frase está errada. Escolha a versão correta entre 3 opções.',pool:()=>ERRO},
+ blitz:{name:'Relâmpago',type:'fill',desc:'Tabela de declinação no automático: caso + gênero → artigo. Velocidade importa.',pool:genBlitz}
+};
+
+/* ---------- ESTADO ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const norm=s=>s.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[.,!?;:"'“”’\-–]/g,'').replace(/\s+/g,' ').trim();
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const PRAISE=["Isso aí!","Perfeito!","Boa!","Mandou bem!","Exato!"];
+
+function load(){try{const x=JSON.parse(localStorage.getItem('fallen_v1'));if(x&&x.stats)return x}catch(e){}
+  return {stats:{N:{ok:0,t:0},A:{ok:0,t:0},D:{ok:0,t:0},G:{ok:0,t:0}},last:null,streak:0,sessions:0}}
+function save(){try{localStorage.setItem('fallen_v1',JSON.stringify(store))}catch(e){}}
+let store=load();
+let S={mode:'lueck',filter:'all',queue:[],total:0,done:0,first:0,missed:[],answered:false};
+
+function dayStr(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function bumpStreak(){
+  const t=dayStr(new Date());if(store.last===t)return;
+  const y=new Date();y.setDate(y.getDate()-1);
+  store.streak=(store.last===dayStr(y))?store.streak+1:1;store.last=t;
+}
+function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
+
+/* ---------- HOME ---------- */
+function renderHome(){
+  $('#bars').innerHTML=Object.keys(CASES).map(k=>{
+    const s=store.stats[k];const p=s.t?Math.round(100*s.ok/s.t):0;
+    return `<div class="bar"><b style="color:${CCOL[k]}">${CASES[k]} <span style="color:var(--mut);font-weight:400">${s.t?p+'% ('+s.t+')':'—'}</span></b><div class="track"><div class="fill" style="width:${p}%;background:${CCOL[k]}"></div></div></div>`}).join('');
+  $('#streak').textContent=store.streak?`🔥 ${store.streak} dia(s) seguidos`:'';
+  $('#tabs').innerHTML=Object.keys(MODES).map(k=>`<button class="tab ${S.mode===k?'on':''}" data-m="${k}">${MODES[k].name}</button>`).join('');
+  $('#mdesc').textContent=MODES[S.mode].desc;
+  const fl=[['all','Todos os casos'],...Object.keys(CASES).map(k=>[k,CASES[k]])];
+  $('#filters').innerHTML=fl.map(([k,n])=>`<button class="chip ${S.filter===k?'on':''}" data-f="${k}">${n}</button>`).join('');
+  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{S.mode=b.dataset.m;renderHome()});
+  document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{S.filter=b.dataset.f;renderHome()});
+}
+
+/* ---------- RODADA ---------- */
+function start(){
+  const m=MODES[S.mode];
+  let pool=m.pool().filter(it=>S.filter==='all'||it.c.includes(S.filter));
+  if(!pool.length){alert('Não há exercícios desse caso neste modo. Tente "Todos os casos".');return}
+  pool=shuffle(pool).slice(0,SESSION);
+  S.queue=pool.map(it=>({it,tries:0}));S.total=pool.length;S.done=0;S.first=0;S.missed=[];
+  $('#play').style.display='block';$('#play').scrollIntoView({behavior:'smooth'});
+  renderQ();
+}
+function tagsHtml(c){return c.split('').map(k=>`<span class="tag" style="background:${CCOL[k]}">${CASES[k]}</span>`).join('')}
+function sentHtml(s){return esc(s).replace(/\[\[(.+?)\]\]/g,'<mark>$1</mark>').replace(/___/g,'<span class="blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>')}
+
+function renderQ(){
+  S.answered=false;
+  if(!S.queue.length)return summary();
+  const cur=S.queue[0],it=cur.it,type=MODES[S.mode].type;
+  $('#pb').style.width=(100*S.done/S.total)+'%';
+  $('#pcount').textContent=`${S.done}/${S.total} resolvidas${S.queue.length>S.total-S.done?' · errou? volta na fila':''}`;
+  let h='';
+  if(type==='fill'){
+    h+=`<div class="lbl">Complete a lacuna</div><div class="q">${sentHtml(it.s)}</div><div class="hint">${esc(it.h||'')}</div><input class="ans" id="inp" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="digite aqui e dê Enter"><div class="sp"><button class="main" id="chk">Conferir</button><button class="ghost" id="dk">Não sei</button></div>`;
+  }else if(type==='sent'){
+    h+=`<div class="lbl">Escreva em alemão</div><div class="q">${esc(it.pt)}</div><div class="hint">💡 ${esc(it.h||'')}</div><input class="ans" id="inp" autocomplete="off" autocapitalize="sentences" spellcheck="false" placeholder="Ich … (pode usar ae/oe/ue/ss)"><div class="sp"><button class="main" id="chk">Conferir</button><button class="ghost" id="dk">Não sei</button></div>`;
+  }else if(type==='case'){
+    h+=`<div class="lbl">Qual é o caso da parte destacada?</div><div class="q">${sentHtml(it.s)}</div><div class="cases">${Object.keys(CASES).map(k=>`<button class="cbtn" data-k="${k}" style="border-left-color:${CCOL[k]}">${CASES[k]}</button>`).join('')}</div>`;
+  }else{
+    cur.opts=cur.opts||shuffle(it.o);
+    h+=`<div class="lbl">Esta frase tem um erro. Qual é a versão correta?</div><div class="q wrongs">✗ ${esc(it.w)}</div>${it.p?`<div class="hint">${esc(it.p)}</div>`:''}<div class="opts">${cur.opts.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
+  }
+  h+=`<div id="fb"></div>`;
+  $('#qa').innerHTML=h;
+  if(type==='fill'||type==='sent'){
+    const inp=$('#inp');inp.focus();
+    inp.onkeydown=e=>{if(e.key==='Enter')check(inp.value)};
+    $('#chk').onclick=()=>check(inp.value);
+    $('#dk').onclick=()=>check('');
+  }else if(type==='case'){
+    document.querySelectorAll('.cbtn').forEach(b=>b.onclick=()=>chooseCase(b));
+  }else{
+    document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>chooseOpt(b));
+  }
+}
+
+function record(cur,ok){
+  if(cur.tries>0)return;
+  for(const k of cur.it.c){store.stats[k].t++;if(ok)store.stats[k].ok++}
+  if(ok)S.first++;else S.missed.push(cur.it);
+  save();
+}
+
+function check(val){
+  if(S.answered)return;
+  const cur=S.queue[0],it=cur.it;
+  const ok=val.trim()!==''&&it.a.map(norm).includes(norm(val));
+  const type=MODES[S.mode].type;
+  S.answered=true;
+  $('#inp').disabled=true;$('#chk').style.display='none';$('#dk').style.display='none';
+  const full=type==='sent'?it.a[0]:it.s.replace('___',it.a[0]);
+  const ans=type==='sent'?it.a[0]+'.':it.a[0];
+  $('#inp').style.borderColor=ok?'var(--ok)':'var(--bad)';
+  feedback(ok,cur,`<b>${esc(ans)}</b>${it.a.length>1&&type==='sent'?`<div class="hint">Outras formas aceitas: ${it.a.slice(1,3).map(esc).join(' · ')}</div>`:''}`,full);
+}
+function chooseCase(btn){
+  if(S.answered)return;S.answered=true;
+  const cur=S.queue[0],it=cur.it,ok=btn.dataset.k===it.c;
+  document.querySelectorAll('.cbtn').forEach(b=>{if(b.dataset.k===it.c)b.classList.add('right');else if(b===btn)b.classList.add('wrong');b.disabled=true});
+  feedback(ok,cur,`<b>${CASES[it.c]}</b>`,it.s.replace(/\[\[|\]\]/g,''));
+}
+function chooseOpt(btn){
+  if(S.answered)return;S.answered=true;
+  const cur=S.queue[0],it=cur.it,picked=cur.opts[+btn.dataset.i],ok=picked===it.o[0];
+  document.querySelectorAll('.opt').forEach(b=>{const t=cur.opts[+b.dataset.i];if(t===it.o[0])b.classList.add('right');else if(b===btn)b.classList.add('wrong');b.disabled=true});
+  feedback(ok,cur,`<b>${esc(it.o[0])}</b>`,it.o[0]);
+}
+function feedback(ok,cur,answerHtml,speakText){
+  record(cur,ok);
+  const it=cur.it;
+  const intro=ok?PRAISE[Math.floor(Math.random()*PRAISE.length)]:'Quase! Só um detalhe:';
+  $('#fb').innerHTML=`<div class="fb ${ok?'ok':'no'}"><div>${ok?'✅':'🟡'} ${intro}${ok?'':' '+answerHtml}</div><div style="margin:6px 0">${esc(it.e||'')}</div><div>${tagsHtml(it.c)}</div><div class="sp"><button class="ghost" id="say">🔊 Ouvir</button><button class="main" id="nx">Próxima ↵</button></div>${ok&&MODES[S.mode].type==='sent'?'<div class="hint" style="margin-top:8px">Leia a frase em voz alta antes de seguir.</div>':''}</div>`;
+  $('#say').onclick=()=>speak(speakText);
+  const nx=$('#nx');nx.onclick=()=>next(ok);nx.focus();
+}
+function next(ok){
+  const cur=S.queue.shift();
+  if(ok){S.done++}else{cur.tries++;S.queue.push(cur)}
+  renderQ();
+}
+function summary(){
+  bumpStreak();store.sessions++;save();renderHome();
+  $('#pb').style.width='100%';$('#pcount').textContent='Rodada concluída';
+  const pct=Math.round(100*S.first/S.total);
+  const type=MODES[S.mode].type;
+  const show=it=>type==='sent'?`${esc(it.pt)} → <b>${esc(it.a[0])}</b>`:type==='err'?`<b>${esc(it.o[0])}</b>`:type==='case'?`${esc(it.s.replace(/\[\[|\]\]/g,''))} → <b>${CASES[it.c]}</b>`:`${esc(it.s.replace('___',it.a[0]))}`;
+  $('#qa').innerHTML=`<div class="q">🎉 ${S.first}/${S.total} de primeira (${pct}%)</div><div class="hint">${pct===100?'Rodada limpa. Suba a dificuldade: tente "Montar frase".':'Tudo resolvido no fim — o que errou volta amanhã na próxima rodada.'}</div>${S.missed.length?`<div class="lbl" style="margin-top:8px">Para revisar</div><ul>${S.missed.map(it=>`<li>${show(it)} <span class="hint">· ${esc(it.e||'')}</span></li>`).join('')}</ul>`:''}<div class="sp"><button class="main" id="again">Nova rodada</button><button class="ghost" id="back">Voltar</button></div>`;
+  $('#again').onclick=start;
+  $('#back').onclick=()=>{$('#play').style.display='none';window.scrollTo({top:0,behavior:'smooth'})};
+}
+
+$('#go').onclick=start;
+$('#quit').onclick=()=>{$('#play').style.display='none'};
+document.addEventListener('keydown',e=>{
+  if(!S.answered&&$('#play').style.display!=='none'){
+    const type=MODES[S.mode].type;
+    if(type==='case'&&'1234'.includes(e.key)&&e.key){const b=document.querySelectorAll('.cbtn')[+e.key-1];if(b)b.click()}
+    if(type==='err'&&'123'.includes(e.key)&&e.key){const b=document.querySelectorAll('.opt')[+e.key-1];if(b)b.click()}
+  }
+});
+renderHome();
+</script>
+</body>
+</html>
